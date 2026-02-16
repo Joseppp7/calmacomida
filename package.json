@@ -17,7 +17,7 @@
   "author": "jmcla",
   "license": "MIT",
   "devDependencies": {
-    "electron": "^28.2.0",
+    "electron": "^40.4.1",
     "electron-builder": "^24.13.3"
   }
 }
