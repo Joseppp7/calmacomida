@@ -1,22 +1,23 @@
 {
-  "name": "minimal-repro",
+  "name": "calmacomida",
+  "productName": "CalmaComida",
   "version": "1.0.0",
-  "description": "A minimal Electron application",
+  "description": "CalmaComida - app de escritorio",
   "main": "main.js",
   "scripts": {
-    "start": "electron ."
+    "start": "electron .",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder"
   },
-  "repository": "https://github.com/electron/minimal-repro",
-  "keywords": [
-    "Electron",
-    "quick",
-    "start",
-    "tutorial",
-    "demo"
-  ],
-  "author": "GitHub",
-  "license": "CC0-1.0",
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "keywords": [],
+  "author": "jmcla",
+  "license": "MIT",
   "devDependencies": {
-    "electron": "^40.4.0"
+    "electron": "^28.2.0",
+    "electron-builder": "^24.13.3"
   }
 }
