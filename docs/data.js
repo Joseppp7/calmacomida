@@ -1,64 +1,66 @@
 window.APP_DATA = {
-  home: {
-    title: "Bienvenido a CalmaComida",
-    text: "Este programa te ayudará a reducir la ansiedad por comer de forma progresiva y amable."
-  },
-
   modules: [
     {
-      id: 1,
-      name: "Módulo 1",
+      id: "1",
+      title: "Módulo 1 · Calma al comenzar",
+      name: "Módulo 1 · Calma al comenzar",
       audios: [
-        { name: "Sesión principal", src: "audio/module-1.mp3" },
-        { name: "Práctica diaria", src: "audio/module-1-daily.mp3" }
+        { title: "Sesión principal", name: "Sesión principal", file: "audio/module-1.mp3", src: "audio/module-1.mp3" },
+        { title: "Práctica diaria", name: "Práctica diaria", file: "audio/module-1-daily.mp3", src: "audio/module-1-daily.mp3" }
       ]
     },
     {
-      id: 2,
-      name: "Módulo 2",
+      id: "2",
+      title: "Módulo 2 · Hambre emocional",
+      name: "Módulo 2 · Hambre emocional",
       audios: [
-        { name: "Sesión principal", src: "audio/module-2.mp3" },
-        { name: "Práctica diaria", src: "audio/module-2-daily.mp3" }
+        { title: "Sesión principal", name: "Sesión principal", file: "audio/module-2.mp3", src: "audio/module-2.mp3" },
+        { title: "Práctica diaria", name: "Práctica diaria", file: "audio/module-2-daily.mp3", src: "audio/module-2-daily.mp3" }
       ]
     },
     {
-      id: 3,
-      name: "Módulo 3",
+      id: "3",
+      title: "Módulo 3 · Impulsos",
+      name: "Módulo 3 · Impulsos",
       audios: [
-        { name: "Sesión principal", src: "audio/module-3.mp3" },
-        { name: "Práctica diaria", src: "audio/module-3-daily.mp3" }
+        { title: "Sesión principal", name: "Sesión principal", file: "audio/module-3.mp3", src: "audio/module-3.mp3" },
+        { title: "Práctica diaria", name: "Práctica diaria", file: "audio/module-3-daily.mp3", src: "audio/module-3-daily.mp3" }
       ]
     },
     {
-      id: 4,
-      name: "Módulo 4",
+      id: "4",
+      title: "Módulo 4 · Saciedad",
+      name: "Módulo 4 · Saciedad",
       audios: [
-        { name: "Sesión principal", src: "audio/module-4.mp3" },
-        { name: "Práctica diaria", src: "audio/module-4-daily.mp3" }
+        { title: "Sesión principal", name: "Sesión principal", file: "audio/module-4.mp3", src: "audio/module-4.mp3" },
+        { title: "Práctica diaria", name: "Práctica diaria", file: "audio/module-4-daily.mp3", src: "audio/module-4-daily.mp3" }
       ]
     },
     {
-      id: 5,
-      name: "Módulo 5",
+      id: "5",
+      title: "Módulo 5 · Ansiedad",
+      name: "Módulo 5 · Ansiedad",
       audios: [
-        { name: "Sesión principal", src: "audio/module-5.mp3" },
-        { name: "Práctica diaria", src: "audio/module-5-daily.mp3" }
+        { title: "Sesión principal", name: "Sesión principal", file: "audio/module-5.mp3", src: "audio/module-5.mp3" },
+        { title: "Práctica diaria", name: "Práctica diaria", file: "audio/module-5-daily.mp3", src: "audio/module-5-daily.mp3" }
       ]
     },
     {
-      id: 6,
-      name: "Módulo 6",
+      id: "6",
+      title: "Módulo 6 · Hábitos",
+      name: "Módulo 6 · Hábitos",
       audios: [
-        { name: "Sesión principal", src: "audio/module-6.mp3" },
-        { name: "Práctica diaria", src: "audio/module-6-daily.mp3" }
+        { title: "Sesión principal", name: "Sesión principal", file: "audio/module-6.mp3", src: "audio/module-6.mp3" },
+        { title: "Práctica diaria", name: "Práctica diaria", file: "audio/module-6-daily.mp3", src: "audio/module-6-daily.mp3" }
       ]
     },
     {
-      id: 7,
-      name: "Módulo 7",
+      id: "7",
+      title: "Módulo 7 · Mantenimiento",
+      name: "Módulo 7 · Mantenimiento",
       audios: [
-        { name: "Sesión principal", src: "audio/module-7.mp3" },
-        { name: "Práctica diaria", src: "audio/module-7-daily.mp3" }
+        { title: "Sesión principal", name: "Sesión principal", file: "audio/module-7.mp3", src: "audio/module-7.mp3" },
+        { title: "Práctica diaria", name: "Práctica diaria", file: "audio/module-7-daily.mp3", src: "audio/module-7-daily.mp3" }
       ]
     }
   ]
