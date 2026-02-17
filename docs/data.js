@@ -3,15 +3,50 @@ const AUDIO_RAW = "?raw=1";
 
 window.APP_DATA = {
   modules: [
-  { id: "module-1", title: "Módulo 1 · Calma al comenzar", audio: AUDIO_BASE + "module-1.mp3" + AUDIO_RAW
-, daily: AUDIO_BASE + "module-1-daily.mp3" + AUDIO_RAW },
-  { id: "module-2", title: "Módulo 2 · Hambre emocional", audio: AUDIO_BASE + "module-2.mp3" + AUDIO_RAW, daily: AUDIO_BASE + "module-2-daily.mp3" + AUDIO_RAW },
-  { id: "module-3", title: "Módulo 3 · Impulsos",        audio: AUDIO_BASE + "module-3.mp3" + AUDIO_RAW, daily: AUDIO_BASE + "module-3-daily.mp3" + AUDIO_RAW },
-  { id: "module-4", title: "Módulo 4 · Saciedad",        audio: AUDIO_BASE + "module-4.mp3" + AUDIO_RAW, daily: AUDIO_BASE + "module-4-daily.mp3" + AUDIO_RAW },
-  { id: "module-5", title: "Módulo 5 · Ansiedad",        audio: AUDIO_BASE + "module-5.mp3" + AUDIO_RAW, daily: AUDIO_BASE + "module-5-daily.mp3" + AUDIO_RAW },
-  { id: "module-6", title: "Módulo 6 · Hábitos",         audio: AUDIO_BASE + "module-6.mp3" + AUDIO_RAW, daily: AUDIO_BASE + "module-6-daily.mp3" + AUDIO_RAW },
-  { id: "module-7", title: "Módulo 7 · Mantenimiento",   audio: AUDIO_BASE + "module-7.mp3" + AUDIO_RAW, daily: AUDIO_BASE + "module-7-daily.mp3" + AUDIO_RAW }
+  {
+    id: "module-1",
+    title: "Módulo 1 · Calma al comenzar",
+    audio: AUDIO_BASE + "module-1.mp3?raw=1",
+    daily: AUDIO_BASE + "module-1-daily.mp3?raw=1"
+  },
+  {
+    id: "module-2",
+    title: "Módulo 2 · Hambre emocional",
+    audio: AUDIO_BASE + "module-2.mp3?raw=1",
+    daily: AUDIO_BASE + "module-2-daily.mp3?raw=1"
+  },
+  {
+    id: "module-3",
+    title: "Módulo 3 · Impulsos",
+    audio: AUDIO_BASE + "module-3.mp3?raw=1",
+    daily: AUDIO_BASE + "module-3-daily.mp3?raw=1"
+  },
+  {
+    id: "module-4",
+    title: "Módulo 4 · Saciedad",
+    audio: AUDIO_BASE + "module-4.mp3?raw=1",
+    daily: AUDIO_BASE + "module-4-daily.mp3?raw=1"
+  },
+  {
+    id: "module-5",
+    title: "Módulo 5 · Ansiedad",
+    audio: AUDIO_BASE + "module-5.mp3?raw=1",
+    daily: AUDIO_BASE + "module-5-daily.mp3?raw=1"
+  },
+  {
+    id: "module-6",
+    title: "Módulo 6 · Hábitos",
+    audio: AUDIO_BASE + "module-6.mp3?raw=1",
+    daily: AUDIO_BASE + "module-6-daily.mp3?raw=1"
+  },
+  {
+    id: "module-7",
+    title: "Módulo 7 · Mantenimiento",
+    audio: AUDIO_BASE + "module-7.mp3?raw=1",
+    daily: AUDIO_BASE + "module-7-daily.mp3?raw=1"
+  }
 ],
+
 
 
   audios: [
