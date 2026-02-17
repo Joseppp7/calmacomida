@@ -1,3 +1,4 @@
+// VERSION: AUDIO_FIX_1
 const AUDIO_BASE = "https://github.com/Joseppp7/calmacomida/releases/download/audio-v1/";
 const AUDIO_RAW = "?raw=1";
 
