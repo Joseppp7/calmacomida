@@ -1,49 +1,56 @@
-const CACHE_NAME = "calmacomida-v2";
+// CalmaComida Service Worker FINAL FIX
+const CACHE_NAME = "calmacomida-v300";
 
-const urlsToCache = [
+// Solo archivos realmente estáticos
+const STATIC_ASSETS = [
   "./",
   "./index.html",
   "./styles.css",
-  "./app.js",
-  "./data.js",
-  "./manifest.json"
+  "./manifest.json",
+  "./favicon.ico"
 ];
 
+// instalación
 self.addEventListener("install", event => {
+  self.skipWaiting();
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(urlsToCache))
+    caches.open(CACHE_NAME).then(cache => cache.addAll(STATIC_ASSETS))
   );
 });
 
+// activación
 self.addEventListener("activate", event => {
   event.waitUntil(
-    caches.keys().then(keys => {
-      return Promise.all(
+    caches.keys().then(keys =>
+      Promise.all(
         keys.map(key => {
           if (key !== CACHE_NAME) {
             return caches.delete(key);
           }
         })
-      );
-    })
+      )
+    )
   );
+  self.clients.claim();
 });
 
+// CLAVE: estrategia network-first
 self.addEventListener("fetch", event => {
+  const request = event.request;
 
-  const requestURL = new URL(event.request.url);
-
-  // 🔴 MUY IMPORTANTE
-  // NO tocar NADA que venga de Google Drive
-  if (requestURL.hostname.includes("drive.google.com") ||
-      requestURL.hostname.includes("googleusercontent.com")) {
-    event.respondWith(fetch(event.request));
-    return;
-  }
+  // SOLO manejamos peticiones de nuestra web
+  if (request.method !== "GET") return;
 
   event.respondWith(
-    caches.match(event.request)
-      .then(response => response || fetch(event.request))
+    fetch(request)
+      .then(response => {
+        // guardamos copia nueva
+        const responseClone = response.clone();
+        caches.open(CACHE_NAME).then(cache => {
+          cache.put(request, responseClone);
+        });
+        return response;
+      })
+      .catch(() => caches.match(request))
   );
 });
