@@ -1,3 +1,28 @@
+// --- DEBUG: mostrar errores en pantalla (Android) ---
+(function () {
+  function show(msg) {
+    const el = document.getElementById("screen") || document.body;
+    const box = document.createElement("pre");
+    box.style.whiteSpace = "pre-wrap";
+    box.style.padding = "12px";
+    box.style.margin = "12px";
+    box.style.borderRadius = "12px";
+    box.style.background = "#2b1d1d";
+    box.style.color = "#ffd2d2";
+    box.style.fontSize = "13px";
+    box.textContent = "[CalmaComida ERROR]\n\n" + msg;
+    el.innerHTML = "";
+    el.appendChild(box);
+  }
+
+  window.addEventListener("error", (e) => {
+    show((e.message || "Error") + "\n" + (e.filename || "") + ":" + (e.lineno || "") + ":" + (e.colno || ""));
+  });
+
+  window.addEventListener("unhandledrejection", (e) => {
+    show("Promise rejection:\n" + (e.reason?.stack || e.reason || "unknown"));
+  });
+})();
 const $ = (sel) => document.querySelector(sel);
 const screen = $("#screen");
 
@@ -178,7 +203,7 @@ function openModule(id){
   };
 
   $("#btnNext").onclick = ()=>{
-    const idx = APP_DATA.modules.findIndex(x => x.id === id);
+    const idx = window.APP_DATA.modules.findIndex(x => x.id === id);
     const next = APP_DATA.modules[idx + 1];
     if(next) openModule(next.id);
     else alert("Ya estás en el último módulo.");
