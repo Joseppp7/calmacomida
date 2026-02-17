@@ -50,30 +50,33 @@ window.APP_DATA = {
 
 
 
-  audios: [
-    { id: "intro", title: "Introducción", file: AUDIO_BASE + "intro-curso.mp3" },
-    { id: "cierre", title: "Cierre mantenimiento", file: AUDIO_BASE + "cierre-mantenimiento.mp3" }
-      { id: "m1",  title: "Módulo 1 · Sesión principal",  file: AUDIO_BASE + "module-1.mp3" },
-    { id: "m1d", title: "Módulo 1 · Práctica diaria",   file: AUDIO_BASE + "module-1-daily.mp3" },
+   audios: [
+    { id: "intro",  title: "Introducción",                 file: AUDIO_BASE + "intro-curso.mp3?raw=1" },
 
-    { id: "m2",  title: "Módulo 2 · Sesión principal",  file: AUDIO_BASE + "module-2.mp3" },
-    { id: "m2d", title: "Módulo 2 · Práctica diaria",   file: AUDIO_BASE + "module-2-daily.mp3" },
+    { id: "m1",     title: "Módulo 1 · Sesión principal",  file: AUDIO_BASE + "module-1.mp3?raw=1" },
+    { id: "m1d",    title: "Módulo 1 · Práctica diaria",   file: AUDIO_BASE + "module-1-daily.mp3?raw=1" },
 
-    { id: "m3",  title: "Módulo 3 · Sesión principal",  file: AUDIO_BASE + "module-3.mp3" },
-    { id: "m3d", title: "Módulo 3 · Práctica diaria",   file: AUDIO_BASE + "module-3-daily.mp3" },
+    { id: "m2",     title: "Módulo 2 · Sesión principal",  file: AUDIO_BASE + "module-2.mp3?raw=1" },
+    { id: "m2d",    title: "Módulo 2 · Práctica diaria",   file: AUDIO_BASE + "module-2-daily.mp3?raw=1" },
 
-    { id: "m4",  title: "Módulo 4 · Sesión principal",  file: AUDIO_BASE + "module-4.mp3" },
-    { id: "m4d", title: "Módulo 4 · Práctica diaria",   file: AUDIO_BASE + "module-4-daily.mp3" },
+    { id: "m3",     title: "Módulo 3 · Sesión principal",  file: AUDIO_BASE + "module-3.mp3?raw=1" },
+    { id: "m3d",    title: "Módulo 3 · Práctica diaria",   file: AUDIO_BASE + "module-3-daily.mp3?raw=1" },
 
-    { id: "m5",  title: "Módulo 5 · Sesión principal",  file: AUDIO_BASE + "module-5.mp3" },
-    { id: "m5d", title: "Módulo 5 · Práctica diaria",   file: AUDIO_BASE + "module-5-daily.mp3" },
+    { id: "m4",     title: "Módulo 4 · Sesión principal",  file: AUDIO_BASE + "module-4.mp3?raw=1" },
+    { id: "m4d",    title: "Módulo 4 · Práctica diaria",   file: AUDIO_BASE + "module-4-daily.mp3?raw=1" },
 
-    { id: "m6",  title: "Módulo 6 · Sesión principal",  file: AUDIO_BASE + "module-6.mp3" },
-    { id: "m6d", title: "Módulo 6 · Práctica diaria",   file: AUDIO_BASE + "module-6-daily.mp3" },
+    { id: "m5",     title: "Módulo 5 · Sesión principal",  file: AUDIO_BASE + "module-5.mp3?raw=1" },
+    { id: "m5d",    title: "Módulo 5 · Práctica diaria",   file: AUDIO_BASE + "module-5-daily.mp3?raw=1" },
 
-    { id: "m7",  title: "Módulo 7 · Sesión principal",  file: AUDIO_BASE + "module-7.mp3" },
-    { id: "m7d", title: "Módulo 7 · Práctica diaria",   file: AUDIO_BASE + "module-7-daily.mp3" },
-]
+    { id: "m6",     title: "Módulo 6 · Sesión principal",  file: AUDIO_BASE + "module-6.mp3?raw=1" },
+    { id: "m6d",    title: "Módulo 6 · Práctica diaria",   file: AUDIO_BASE + "module-6-daily.mp3?raw=1" },
+
+    { id: "m7",     title: "Módulo 7 · Sesión principal",  file: AUDIO_BASE + "module-7.mp3?raw=1" },
+    { id: "m7d",    title: "Módulo 7 · Práctica diaria",   file: AUDIO_BASE + "module-7-daily.mp3?raw=1" },
+
+    { id: "cierre", title: "Cierre mantenimiento",         file: AUDIO_BASE + "cierre-mantenimiento.mp3?raw=1" }
+  ]
+
 };
 
 var APP_DATA = window.APP_DATA;
