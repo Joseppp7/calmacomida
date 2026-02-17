@@ -1,3 +1,30 @@
+// DEBUG_MOBILE_ERRORS_v1
+(function () {
+  function show(msg) {
+    const el = document.getElementById("screen") || document.body;
+    el.innerHTML = `<pre style="white-space:pre-wrap;padding:12px;margin:12px;border-radius:12px;background:#2b1d1d;color:#ffd2d2;font-family:monospace">${msg}</pre>`;
+  }
+
+  window.addEventListener("error", (e) => {
+    show("ERROR:\n" + (e.message || "") + "\n" + (e.filename || "") + ":" + (e.lineno || "") + ":" + (e.colno || ""));
+  });
+
+  window.addEventListener("unhandledrejection", (e) => {
+    show("PROMISE ERROR:\n" + (e.reason?.stack || e.reason || "unknown"));
+  });
+
+  setTimeout(() => {
+    const a = window.APP_DATA;
+    show(
+      "DEBUG:\n" +
+      "APP_DATA: " + (a ? "OK" : "NO") + "\n" +
+      "modules: " + (a?.modules?.length || 0) + "\n" +
+      "audios: " + (a?.audios?.length || 0) + "\n" +
+      "first audio title: " + (a?.audios?.[0]?.title || "NONE") + "\n" +
+      "first audio file: " + (a?.audios?.[0]?.file || "NONE")
+    );
+  }, 800);
+})();
 // Fuente única de datos (evita líos entre APP_DATA y window.APP_DATA)
 const DATA = (window.APP_DATA || (typeof APP_DATA !== "undefined" ? APP_DATA : null));
 
@@ -219,10 +246,12 @@ function openModule(id){
 
 /* ---------------- AUDIOS ---------------- */
 function renderAudios(){
-  const items = (APP_DATA.audios || []).map(a=>`
+  const items = ((APP_DATA.audios || window.APP_DATA?.audios) || []).map(a=>`
+
     <div class="item">
       <div class="itemTitle">${a.title}</div>
-      <button class="chip" data-audio="${a.file}" title="Reproducir">▶</button>
+      <button class="chip" data-audio="${a.file || a.src}"
+ title="Reproducir">▶</button>
     </div>
   `).join("");
 
