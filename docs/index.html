@@ -1,18 +1,37 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="UTF-8">
-    <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
-        <link href="./styles.css" rel="stylesheet">
-    <title>Hello World!</title>
-  </head>
-  <body>
-    <h1>Hello World!</h1>
-    We are using Node.js <span id="node-version"></span>,
-    Chromium <span id="chrome-version"></span>,
-    and Electron <span id="electron-version"></span>.
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CalmaComida</title>
+<link rel="icon" href="favicon.ico">
 
-    <!-- You can also require other files to run in this process -->
-    <script src="./renderer.js"></script>
-  </body>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#1f3b34">
+
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div>
+        <h1 id="appTitle">CalmaComida</h1>
+        <p class="subtitle" id="appSubtitle">Calma · Claridad · Elección</p>
+      </div>
+      <button class="chip" id="btnReset" title="Reset progreso">Reset</button>
+    </header>
+
+    <main class="screen" id="screen"></main>
+
+    <nav class="tabbar">
+      <button class="tab active" data-tab="home">Inicio</button>
+      <button class="tab" data-tab="modules">Módulos</button>
+      <button class="tab" data-tab="audio">Audios</button>
+      <button class="tab" data-tab="progress">Progreso</button>
+    </nav>
+  </div>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
 </html>
