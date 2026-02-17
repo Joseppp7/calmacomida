@@ -1,3 +1,34 @@
+// Fuente única de datos (evita líos entre APP_DATA y window.APP_DATA)
+const DATA = (window.APP_DATA || (typeof APP_DATA !== "undefined" ? APP_DATA : null));
+
+if (!DATA) {
+  console.error("No hay DATA (APP_DATA/window.APP_DATA). Revisa data.js");
+}
+// --- DEBUG: mostrar errores en pantalla (Android) ---
+(function () {
+  function show(msg) {
+    const el = document.getElementById("screen") || document.body;
+    const box = document.createElement("pre");
+    box.style.whiteSpace = "pre-wrap";
+    box.style.padding = "12px";
+    box.style.margin = "12px";
+    box.style.borderRadius = "12px";
+    box.style.background = "#2b1d1d";
+    box.style.color = "#ffd2d2";
+    box.style.fontSize = "13px";
+    box.textContent = "[CalmaComida ERROR]\n\n" + msg;
+    el.innerHTML = "";
+    el.appendChild(box);
+  }
+
+  window.addEventListener("error", (e) => {
+    show((e.message || "Error") + "\n" + (e.filename || "") + ":" + (e.lineno || "") + ":" + (e.colno || ""));
+  });
+
+  window.addEventListener("unhandledrejection", (e) => {
+    show("Promise rejection:\n" + (e.reason?.stack || e.reason || "unknown"));
+  });
+})();
 const $ = (sel) => document.querySelector(sel);
 const screen = $("#screen");
 
@@ -91,7 +122,8 @@ function renderModules(){
     return `
       <div class="item" data-open="${m.id}" style="cursor:pointer">
         <div>
-          <div class="itemTitle">${m.title}</div>
+          <div class="itemTitle">${(m.title || m.name || m.label || ("Módulo " + m.id))}</div>
+
           <div class="itemSub">${m.desc || ""}</div>
         </div>
         <div style="display:flex; gap:8px; align-items:center">
@@ -178,7 +210,7 @@ function openModule(id){
   };
 
   $("#btnNext").onclick = ()=>{
-    const idx = APP_DATA.modules.findIndex(x => x.id === id);
+    const idx = window.APP_DATA.modules.findIndex(x => x.id === id);
     const next = APP_DATA.modules[idx + 1];
     if(next) openModule(next.id);
     else alert("Ya estás en el último módulo.");
@@ -236,7 +268,7 @@ function renderProgress(){
 /* ---------------- SW + RESET ---------------- */
 function registerSW(){
   if("serviceWorker" in navigator){
-    navigator.serviceWorker.register("service-worker.js").catch(()=>{});
+    navigator.serviceWorker.register("./service-worker.js").catch(()=>{});
   }
 }
 
