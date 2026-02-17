@@ -1,3 +1,9 @@
+// Fuente única de datos (evita líos entre APP_DATA y window.APP_DATA)
+const DATA = (window.APP_DATA || (typeof APP_DATA !== "undefined" ? APP_DATA : null));
+
+if (!DATA) {
+  console.error("No hay DATA (APP_DATA/window.APP_DATA). Revisa data.js");
+}
 // --- DEBUG: mostrar errores en pantalla (Android) ---
 (function () {
   function show(msg) {
@@ -116,7 +122,8 @@ function renderModules(){
     return `
       <div class="item" data-open="${m.id}" style="cursor:pointer">
         <div>
-          <div class="itemTitle">${m.title}</div>
+          <div class="itemTitle">${(m.title || m.name || m.label || ("Módulo " + m.id))}</div>
+
           <div class="itemSub">${m.desc || ""}</div>
         </div>
         <div style="display:flex; gap:8px; align-items:center">
