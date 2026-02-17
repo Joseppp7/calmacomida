@@ -1,30 +1,25 @@
-// DEBUG_MOBILE_ERRORS_v1
-(function () {
-  function show(msg) {
-    const el = document.getElementById("screen") || document.body;
-    el.innerHTML = `<pre style="white-space:pre-wrap;padding:12px;margin:12px;border-radius:12px;background:#2b1d1d;color:#ffd2d2;font-family:monospace">${msg}</pre>`;
+// === BOOTSTRAP: asegura APP_DATA antes de usarlo (Android/PWA safe) ===
+(function waitForData(){
+  if (window.APP_DATA) {
+    // crea alias global si falta
+    if (typeof window.APP_DATA !== "undefined" && typeof APP_DATA === "undefined") {
+      window.APP_DATA_ALIAS = window.APP_DATA; // por si acaso
+      // eslint-disable-next-line no-var
+      var APP_DATA = window.APP_DATA;
+      window.APP_DATA = window.APP_DATA; // no-op
+    }
+    return; // sigue cargando el resto del fichero
   }
-
-  window.addEventListener("error", (e) => {
-    show("ERROR:\n" + (e.message || "") + "\n" + (e.filename || "") + ":" + (e.lineno || "") + ":" + (e.colno || ""));
-  });
-
-  window.addEventListener("unhandledrejection", (e) => {
-    show("PROMISE ERROR:\n" + (e.reason?.stack || e.reason || "unknown"));
-  });
-
-  setTimeout(() => {
-    const a = window.APP_DATA;
-    show(
-      "DEBUG:\n" +
-      "APP_DATA: " + (a ? "OK" : "NO") + "\n" +
-      "modules: " + (a?.modules?.length || 0) + "\n" +
-      "audios: " + (a?.audios?.length || 0) + "\n" +
-      "first audio title: " + (a?.audios?.[0]?.title || "NONE") + "\n" +
-      "first audio file: " + (a?.audios?.[0]?.file || "NONE")
-    );
-  }, 800);
+  // reintenta hasta 2s
+  if (!window.__DATA_WAIT_START) window.__DATA_WAIT_START = Date.now();
+  if (Date.now() - window.__DATA_WAIT_START > 2000) {
+    document.body.innerHTML = `<pre style="padding:12px">[CalmaComida ERROR]\nNo se cargó data.js (window.APP_DATA no existe).</pre>`;
+    return;
+  }
+  setTimeout(waitForData, 50);
 })();
+// DEBUG_MOBILE_ERRORS_v1
+
 // Fuente única de datos (evita líos entre APP_DATA y window.APP_DATA)
 const DATA = (window.APP_DATA || (typeof APP_DATA !== "undefined" ? APP_DATA : null));
 
