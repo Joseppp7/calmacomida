@@ -214,9 +214,24 @@ function openModule(id){
       </div>
 
       <div class="audioBox">
-        <div style="font-weight:900; margin-bottom:8px">Audio del módulo</div>
-        ${m.audio ? `<audio id="player" controls src="${m.audio}"></audio>` : `<p class="p">Este módulo aún no tiene audio asignado.</p>`}
-      </div>
+  <div style="font-weight:900; margin-bottom:8px">Audio del módulo</div>
+
+  ${(m.audio || m.daily) ? `
+    <audio id="player" controls src="${m.audio || ""}"></audio>
+
+    <div class="row" style="margin-top:10px">
+      <button class="btn ghost" id="btnMainAudio" ${m.audio ? "" : "disabled"}>▶ Sesión principal</button>
+      <button class="btn" id="btnDailyAudio" ${m.daily ? "" : "disabled"}>☀ Práctica diaria</button>
+    </div>
+
+    <p class="p" style="margin-top:10px; opacity:.9">
+      Consejo: usa la <b>Práctica diaria</b> justo antes de una comida o cuando notes impulso/ansiedad.
+    </p>
+  ` : `
+    <p class="p">Este módulo aún no tiene audio asignado.</p>
+  `}
+</div>
+
 
       <div class="row">
         <button class="btn" id="btnDone">${isDone ? "Marcar como NO terminado" : "Marcar como terminado ✓"}</button>
@@ -227,7 +242,25 @@ function openModule(id){
 
   $("#btnBack").onclick = ()=> renderModules();
 
-  $("#btnDone").onclick = ()=>{
+  // Botones de audio (sesión principal / práctica diaria)
+const player = document.getElementById("player");
+
+const btnMain = document.getElementById("btnMainAudio");
+if (btnMain && m.audio && player) {
+  btnMain.onclick = () => {
+    player.src = m.audio;
+    player.play().catch(()=>{});
+  };
+}
+
+const btnDaily = document.getElementById("btnDailyAudio");
+if (btnDaily && m.daily && player) {
+  btnDaily.onclick = () => {
+    player.src = m.daily;
+    player.play().catch(()=>{});
+  };
+}
+$("#btnDone").onclick = ()=>{
     state.done[id] = !state.done[id];
     saveState();
     openModule(id);
