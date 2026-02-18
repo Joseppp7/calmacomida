@@ -181,7 +181,8 @@ function openModule(id){
 
   screen.innerHTML = `
     <section class="card">
-      <div style="display:flex; justify-content:space-between; gap:10px; align-items:flex-start">
+      ${m.image ? `<img class="moduleHero" src="./${m.image}" alt="${m.title}">` : ""}
+<div style="display:flex; justify-content:space-between; gap:10px; align-items:flex-start">
         <div>
           <h2 class="h2" style="margin-bottom:4px">${m.title}</h2>
           <p class="p">${m.desc || ""}</p>
@@ -245,7 +246,8 @@ function renderAudios(){
   const items = ((APP_DATA.audios || window.APP_DATA?.audios) || []).map(a=>`
 
     <div class="item">
-      <div class="itemTitle">${a.title}</div>
+     <img class="audioThumb" src="./img/${a.id}.jpg" onerror="this.src='./img/intro.jpg'">
+ <div class="itemTitle">${a.title}</div>
       <button class="chip" data-audio="${a.file || a.src}"
  title="Reproducir">▶</button>
     </div>
@@ -262,7 +264,17 @@ function renderAudios(){
         <audio id="player2" controls></audio>
       </div>
     </section>
-  `;
+        <div class="card moduleInfo">
+        <h3 class="h3">Objetivo</h3>
+        <p class="p">${m.goal || "—"}</p>
+
+        <h3 class="h3" style="margin-top:12px">Práctica</h3>
+        <p class="p">${m.practice || "—"}</p>
+
+        <h3 class="h3" style="margin-top:12px">Qué puedes esperar</h3>
+        <p class="p">${m.expect || "—"}</p>
+      </div>
+`;
 
   screen.querySelectorAll("[data-audio]").forEach(btn=>{
     btn.onclick = ()=>{
