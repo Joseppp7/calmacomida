@@ -181,7 +181,7 @@ function openModule(id){
 
   screen.innerHTML = `
     <section class="card">
-      ${m.image ? `<img class="moduleHero" src="./${m.image}" alt="${m.title}">` : ""}
+      
 <div style="display:flex; justify-content:space-between; gap:10px; align-items:flex-start">
         <div>
           <h2 class="h2" style="margin-bottom:4px">${m.title}</h2>
@@ -202,14 +202,14 @@ function openModule(id){
       <div style="margin-top:12px">
         <div class="kpi" style="background:var(--soft)">
           <b>Objetivo</b>
-          <small>${m.objective || "—"}</small>
+          <small>${m.goal || "—"}</small>
         </div>
       </div>
 
       <div style="margin-top:10px">
         <div class="kpi" style="background:var(--soft)">
-          <b>Práctica</b>
-          <small>${m.practice || "—"}</small>
+          <b>Qué puedes esperar</b>
+          <small>${m.expect || "—"}</small>
         </div>
       </div>
 
@@ -264,17 +264,7 @@ function renderAudios(){
         <audio id="player2" controls></audio>
       </div>
     </section>
-        <div class="card moduleInfo">
-        <h3 class="h3">Objetivo</h3>
-        <p class="p">${m.goal || "—"}</p>
-
-        <h3 class="h3" style="margin-top:12px">Práctica</h3>
-        <p class="p">${m.practice || "—"}</p>
-
-        <h3 class="h3" style="margin-top:12px">Qué puedes esperar</h3>
-        <p class="p">${m.expect || "—"}</p>
-      </div>
-`;
+       `;
 
   screen.querySelectorAll("[data-audio]").forEach(btn=>{
     btn.onclick = ()=>{
