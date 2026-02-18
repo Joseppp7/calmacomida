@@ -7,13 +7,14 @@ var AUDIO_QS = "?raw=1";
 
 window.APP_DATA = {
   modules: [
-    { id: "module-1", title: "Módulo 1 · Calma al comenzar",    audio: AUDIO_CDN + "module-1.mp3" + AUDIO_QS,      daily: AUDIO_CDN + "module-1-daily.mp3" + AUDIO_QS },
-    { id: "module-2", title: "Módulo 2 · Hambre emocional",     audio: AUDIO_CDN + "module-2.mp3" + AUDIO_QS,      daily: AUDIO_CDN + "module-2-daily.mp3" + AUDIO_QS },
-    { id: "module-3" + AUDIO_QS, title: "Módulo 3 · Impulsos",             audio: AUDIO_CDN + "module-3.mp3" + AUDIO_QS,      daily: AUDIO_CDN + "module-3-daily.mp3" + AUDIO_QS },
-    { id: "module-4", title: "Módulo 4 · Saciedad",             audio: AUDIO_CDN + "module-4.mp3" + AUDIO_QS,      daily: AUDIO_CDN + "module-4-daily.mp3" + AUDIO_QS },
-    { id: "module-5", title: "Módulo 5 · Ansiedad",             audio: AUDIO_CDN + "module-5.mp3" + AUDIO_QS,      daily: AUDIO_CDN + "module-5-daily.mp3" + AUDIO_QS },
-    { id: "module-6", title: "Módulo 6 · Hábitos",              audio: AUDIO_CDN + "module-6.mp3" + AUDIO_QS,      daily: AUDIO_CDN + "module-6-daily.mp3" + AUDIO_QS },
-    { id: "module-7", title: "Módulo 7 · Mantenimiento",        audio: AUDIO_CDN + "module-7.mp3" + AUDIO_QS,      daily: AUDIO_CDN + "module-7-daily.mp3" + AUDIO_QS }
+    { id: "module-1", title: "Módulo 1 · Calma al comenzar", image: "img/module-1.jpg", audio: AUDIO_CDN + "module-1.mp3" + AUDIO_QS, daily: AUDIO_CDN + "module-1-daily.mp3" + AUDIO_QS }
+,
+    { id: "module-2", title: "Módulo 2 · Hambre emocional", image: "img/module-2.jpg", audio: AUDIO_CDN + "module-2.mp3" + AUDIO_QS,      daily: AUDIO_CDN + "module-2-daily.mp3" + AUDIO_QS },
+    { id: "module-3" + AUDIO_QS, title: "Módulo 3 · Impulsos", image: "img/module-3.jpg", audio: AUDIO_CDN + "module-3.mp3" + AUDIO_QS,      daily: AUDIO_CDN + "module-3-daily.mp3" + AUDIO_QS },
+    { id: "module-4", title: "Módulo 4 · Saciedad", image: "img/module-4.jpg", audio: AUDIO_CDN + "module-4.mp3" + AUDIO_QS,      daily: AUDIO_CDN + "module-4-daily.mp3" + AUDIO_QS },
+    { id: "module-5", title: "Módulo 5 · Ansiedad", image: "img/module-5.jpg", audio: AUDIO_CDN + "module-5.mp3" + AUDIO_QS,      daily: AUDIO_CDN + "module-5-daily.mp3" + AUDIO_QS },
+    { id: "module-6", title: "Módulo 6 · Hábitos", image: "img/module-6.jpg",  audio: AUDIO_CDN + "module-6.mp3" + AUDIO_QS,      daily: AUDIO_CDN + "module-6-daily.mp3" + AUDIO_QS },
+    { id: "module-7", title: "Módulo 7 · Mantenimiento", image: "img/module-7.jpg", audio: AUDIO_CDN + "module-7.mp3" + AUDIO_QS,      daily: AUDIO_CDN + "module-7-daily.mp3" + AUDIO_QS }
   ],
 
   audios: [
