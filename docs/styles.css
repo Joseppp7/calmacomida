@@ -216,3 +216,26 @@ audio{width:100%}
   background:var(--soft);
   color:var(--text);
 }
+/* FIX imágenes: que siempre sean visibles */
+img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+.heroImage,
+.screen img,
+.card img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 14px;
+}
+
+/* Si usas fondos como background-image */
+.bgImage {
+  min-height: 180px;   /* si era 0px, ahora se verá */
+  background-size: cover;
+  background-position: center;
+  border-radius: 14px;
+}

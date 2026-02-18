@@ -112,7 +112,8 @@ function renderHome(){
     </section>
 
     <section class="card" style="margin-top:12px">
-      <h2 class="h2">Cómo usar la app</h2>
+      <img class="heroImage" src="./img/portada.jpg" alt="Portada CalmaComida">
+<h2 class="h2">Cómo usar la app</h2>
       <p class="p">
         1) Entra en <b>Módulos</b> y abre el módulo de hoy.<br>
         2) Escucha el audio + haz la práctica.<br>
