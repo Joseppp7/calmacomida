@@ -1,10 +1,28 @@
-// Fuente única de datos (evita líos entre APP_DATA y window.APP_DATA)
+// === BOOTSTRAP: asegura APP_DATA antes de usarlo ===
+(function waitForData(){
+  if (window.APP_DATA) {
+    if (typeof window.APP_DATA !== "undefined" && typeof APP_DATA === "undefined") {
+      window.APP_DATA_ALIAS = window.APP_DATA;
+      var APP_DATA = window.APP_DATA;
+      window.APP_DATA = window.APP_DATA;
+    }
+    return;
+  }
+  if (!window.__DATA_WAIT_START) window.__DATA_WAIT_START = Date.now();
+  if (Date.now() - window.__DATA_WAIT_START > 2000) {
+    document.body.innerHTML = `<pre style="padding:12px">[CalmaComida ERROR]\nNo se cargó data.js</pre>`;
+    return;
+  }
+  setTimeout(waitForData, 50);
+})();
+
 const DATA = (window.APP_DATA || (typeof APP_DATA !== "undefined" ? APP_DATA : null));
 
 if (!DATA) {
-  console.error("No hay DATA (APP_DATA/window.APP_DATA). Revisa data.js");
+  console.error("No hay DATA (APP_DATA/window.APP_DATA)");
 }
-// --- DEBUG: mostrar errores en pantalla (Android) ---
+
+// --- DEBUG: mostrar errores en pantalla ---
 (function () {
   function show(msg) {
     const el = document.getElementById("screen") || document.body;
@@ -22,13 +40,14 @@ if (!DATA) {
   }
 
   window.addEventListener("error", (e) => {
-    show((e.message || "Error") + "\n" + (e.filename || "") + ":" + (e.lineno || "") + ":" + (e.colno || ""));
+    show((e.message || "Error") + "\n" + (e.filename || "") + ":" + (e.lineno || ""));
   });
 
   window.addEventListener("unhandledrejection", (e) => {
     show("Promise rejection:\n" + (e.reason?.stack || e.reason || "unknown"));
   });
 })();
+
 const $ = (sel) => document.querySelector(sel);
 const screen = $("#screen");
 
@@ -40,12 +59,15 @@ function loadState(){
   try{
     return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {
       done: {},
-      lastTab: "home"
+      lastTab: "home",
+      streak: 0,
+      lastCompleted: null
     };
   }catch{
-    return { done:{}, lastTab:"home" };
+    return { done:{}, lastTab:"home", streak: 0, lastCompleted: null };
   }
 }
+
 function saveState(){
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 }
@@ -73,7 +95,7 @@ function render(tab){
   if(tab === "progress") return renderProgress();
 }
 
-/* ---------------- HOME ---------------- */
+/* ===== HOME ===== */
 function renderHome(){
   const {done, total, pct} = stats();
 
@@ -89,12 +111,15 @@ function renderHome(){
       </div>
     </section>
 
-    <section class="card" style="margin-top:12px">
+    <section class="card" style="margin-top:16px">
+      <img class="heroImage" src="./img/portada.jpg" alt="Portada CalmaComida">
       <h2 class="h2">Cómo usar la app</h2>
       <p class="p">
-        1) Entra en <b>Módulos</b> y abre el módulo de hoy.<br>
-        2) Escucha el audio + haz la práctica.<br>
-        3) Marca “Terminado” (se guarda en este dispositivo).
+        1) Entra en <b>Módulos</b> y abre el módulo de hoy.  
+
+        2) Escucha el audio + haz la práctica.  
+
+        3) Marca "Terminado" (se guarda en este dispositivo).
       </p>
       <div class="row">
         <button class="btn" id="goModules">Empezar</button>
@@ -105,8 +130,14 @@ function renderHome(){
     <section class="card">
       <h2 class="h2">Tu progreso</h2>
       <div class="grid2">
-        <div class="kpi"><b>${pct}%</b><small>Completado</small></div>
-        <div class="kpi"><b>${done}/${total}</b><small>Módulos marcados</small></div>
+        <div class="kpi">
+          <b>${pct}%</b>
+          <small>Completado</small>
+        </div>
+        <div class="kpi">
+          <b>${done}/${total}</b>
+          <small>Módulos marcados</small>
+        </div>
       </div>
     </section>
   `;
@@ -115,19 +146,18 @@ function renderHome(){
   $("#goAudio").onclick = ()=> setActiveTab("audio");
 }
 
-/* ---------------- MODULES LIST ---------------- */
+/* ===== MODULES LIST ===== */
 function renderModules(){
   const items = APP_DATA.modules.map(m=>{
     const isDone = !!state.done[m.id];
     return `
-      <div class="item" data-open="${m.id}" style="cursor:pointer">
+      <div class="item" data-open="${m.id}">
         <div>
           <div class="itemTitle">${(m.title || m.name || m.label || ("Módulo " + m.id))}</div>
-
           <div class="itemSub">${m.desc || ""}</div>
         </div>
         <div style="display:flex; gap:8px; align-items:center">
-          <span class="badge">${isDone ? "✅ Hecho" : "Pendiente"}</span>
+          <span class="badge ${isDone ? 'done' : ''}">${isDone ? "✅ Hecho" : "Pendiente"}</span>
         </div>
       </div>
     `;
@@ -149,7 +179,7 @@ function renderModules(){
   });
 }
 
-/* ---------------- MODULE DETAIL ---------------- */
+/* ===== MODULE DETAIL ===== */
 function openModule(id){
   const m = APP_DATA.modules.find(x => x.id === id);
   if(!m){ alert("No se encontró el módulo."); return; }
@@ -166,7 +196,7 @@ function openModule(id){
         <button class="chip" id="btnBack">Volver</button>
       </div>
 
-      <!-- IMAGEN SUGERENTE DEL MÓDULO -->
+      <!-- IMAGEN DEL MÓDULO -->
       <div class="moduleHero">
         <img class="moduleHeroImg" src="${m.image || ""}" alt="Imagen del módulo"
              onerror="this.style.display='none'">
@@ -175,23 +205,37 @@ function openModule(id){
         </div>
       </div>
 
-      <div style="margin-top:12px">
+      <div style="margin-top:14px">
         <div class="kpi" style="background:var(--soft)">
           <b>Objetivo</b>
-          <small>${m.objective || "—"}</small>
+          <small>${m.goal || "—"}</small>
         </div>
       </div>
 
       <div style="margin-top:10px">
         <div class="kpi" style="background:var(--soft)">
-          <b>Práctica</b>
-          <small>${m.practice || "—"}</small>
+          <b>Qué puedes esperar</b>
+          <small>${m.expect || "—"}</small>
         </div>
       </div>
 
       <div class="audioBox">
         <div style="font-weight:900; margin-bottom:8px">Audio del módulo</div>
-        ${m.audio ? `<audio id="player" controls src="${m.audio}"></audio>` : `<p class="p">Este módulo aún no tiene audio asignado.</p>`}
+
+        ${(m.audio || m.daily) ? `
+          <audio id="player" controls src="${m.audio || ""}"></audio>
+
+          <div class="row" style="margin-top:10px">
+            <button class="btn ghost" id="btnMainAudio" ${m.audio ? "" : "disabled"}>▶ Sesión principal</button>
+            <button class="btn" id="btnDailyAudio" ${m.daily ? "" : "disabled"}>☀ Práctica diaria</button>
+          </div>
+
+          <p class="p" style="margin-top:10px; opacity:.9">
+            Consejo: usa la <b>Práctica diaria</b> justo antes de una comida o cuando notes impulso/ansiedad.
+          </p>
+        ` : `
+          <p class="p">Este módulo aún no tiene audio asignado.</p>
+        `}
       </div>
 
       <div class="row">
@@ -203,8 +247,29 @@ function openModule(id){
 
   $("#btnBack").onclick = ()=> renderModules();
 
+  const player = document.getElementById("player");
+
+  const btnMain = document.getElementById("btnMainAudio");
+  if (btnMain && m.audio && player) {
+    btnMain.onclick = () => {
+      player.src = m.audio;
+      player.play().catch(()=>{});
+    };
+  }
+
+  const btnDaily = document.getElementById("btnDailyAudio");
+  if (btnDaily && m.daily && player) {
+    btnDaily.onclick = () => {
+      player.src = m.daily;
+      player.play().catch(()=>{});
+    };
+  }
+
   $("#btnDone").onclick = ()=>{
     state.done[id] = !state.done[id];
+    if (state.done[id]) {
+      state.lastCompleted = new Date().toISOString();
+    }
     saveState();
     openModule(id);
   };
@@ -217,12 +282,13 @@ function openModule(id){
   };
 }
 
-/* ---------------- AUDIOS ---------------- */
+/* ===== AUDIOS ===== */
 function renderAudios(){
-  const items = (APP_DATA.audios || []).map(a=>`
+  const items = ((APP_DATA.audios || window.APP_DATA?.audios) || []).map(a=>`
     <div class="item">
+      <img class="audioThumb" src="./img/${a.id}.jpg" onerror="this.src='./img/intro.jpg'">
       <div class="itemTitle">${a.title}</div>
-      <button class="chip" data-audio="${a.file}" title="Reproducir">▶</button>
+      <button class="chip" data-audio="${a.file || a.src}" title="Reproducir">▶</button>
     </div>
   `).join("");
 
@@ -247,7 +313,7 @@ function renderAudios(){
   });
 }
 
-/* ---------------- PROGRESS ---------------- */
+/* ===== PROGRESS ===== */
 function renderProgress(){
   const {done, total, pct} = stats();
   screen.innerHTML = `
@@ -265,7 +331,7 @@ function renderProgress(){
   $("#toHome").onclick = ()=> setActiveTab("home");
 }
 
-/* ---------------- SW + RESET ---------------- */
+/* ===== SERVICE WORKER + RESET ===== */
 function registerSW(){
   if("serviceWorker" in navigator){
     navigator.serviceWorker.register("./service-worker.js").catch(()=>{});
@@ -280,7 +346,7 @@ $("#btnReset").addEventListener("click", ()=>{
   }
 });
 
-/* ---------------- START ---------------- */
+/* ===== START ===== */
 document.getElementById("appTitle").textContent = APP_DATA.name;
 document.getElementById("appSubtitle").textContent = APP_DATA.subtitle;
 
