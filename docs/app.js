@@ -307,10 +307,14 @@ window.playDirect = (file) => {
 };
 
 /* ============================================================
-   PROGRESO
+ /* ============================================================
+   PROGRESO (CON IMAGEN MOTIVADORA)
    ============================================================ */
 function renderProgress() {
   const { done, total, pct } = stats();
+
+  // Imagen motivadora (puedes cambiar este link por una foto tuya si quieres)
+  const progressImg = "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=800&q=80";
 
   let icon = "🌱", message = "Cada paso cuenta. Lo importante es empezar.";
   if (pct > 0)   { icon = "🌿"; message = "¡Ya has empezado! El primer paso es el más difícil."; }
@@ -319,19 +323,27 @@ function renderProgress() {
   if (pct >= 100){ icon = "👑"; message = "¡Increíble! Has completado el programa. Eres pura inspiración."; }
 
   screen.innerHTML = `
-    <section class="card" style="text-align:center;padding:36px 20px">
-      <div style="font-size:64px;margin-bottom:10px">${icon}</div>
-      <h2 class="h2">Tu Transformación</h2>
-      <p class="p" style="font-style:italic;color:var(--brand);font-weight:600;margin-top:6px">
-        "${message}"
-      </p>
-      <div class="progress-container">
-        <div class="progress-bar" style="width:${pct}%"></div>
-      </div>
-      <p class="p" style="margin-top:10px">Has completado el <b>${pct}%</b> del camino</p>
-      <div class="grid2" style="margin-top:20px">
-        <div class="kpi"><b>${done}</b><small>Módulos hechos</small></div>
-        <div class="kpi"><b>${total - done}</b><small>Por descubrir</small></div>
+    <section class="card" style="padding:0; overflow:hidden;">
+      <!-- IMAGEN NUEVA ENCIMA -->
+      <img src="${progressImg}" style="width:100%; height:180px; object-fit:cover; border-radius:0;">
+      
+      <div style="text-align:center; padding:30px 20px">
+        <div style="font-size:50px; margin-top:-60px; background:white; width:90px; height:90px; line-height:90px; border-radius:50%; margin-left:auto; margin-right:auto; box-shadow:var(--shadow); position:relative; z-index:2;">${icon}</div>
+        
+        <h2 class="h2" style="margin-top:15px">Tu Transformación</h2>
+        <p class="p" style="font-style:italic; color:var(--brand); font-weight:600; margin-top:6px">
+          "${message}"
+        </p>
+
+        <div class="progress-container">
+          <div class="progress-bar" style="width:${pct}%"></div>
+        </div>
+        <p class="p" style="margin-top:10px">Has completado el <b>${pct}%</b> del camino</p>
+        
+        <div class="grid2" style="margin-top:20px">
+          <div class="kpi"><b>${done}</b><small>Módulos hechos</small></div>
+          <div class="kpi"><b>${total - done}</b><small>Por descubrir</small></div>
+        </div>
       </div>
     </section>
 
@@ -344,8 +356,8 @@ function renderProgress() {
       </div>
     </section>
 
-    <div style="text-align:center;padding:16px 0 30px">
-      <button class="chip" id="btnReset" style="opacity:0.45;font-size:11px">
+    <div style="text-align:center; padding:16px 0 30px">
+      <button class="chip" id="btnReset" style="opacity:0.45; font-size:11px">
         Reiniciar todo el progreso
       </button>
     </div>
@@ -361,7 +373,6 @@ function renderProgress() {
     }
   };
 }
-
 /* ============================================================
    SERVICE WORKER
    ============================================================ */
