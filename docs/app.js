@@ -291,27 +291,70 @@ function renderAudios(){
   });
 }
 
-/* ===== PROGRESS ===== */
+/* ===== PROGRESS (MURO DE LOGROS) ===== */
 function renderProgress(){
   const {done, total, pct} = stats();
+  
+  // Mensajes motivadores dinámicos
+  let message = "Cada paso cuenta. Lo importante es empezar.";
+  let icon = "🌱";
+  
+  if (pct > 0) { message = "¡Ya has empezado! El primer paso es el más difícil."; icon = "🌿"; }
+  if (pct > 30) { message = "Lo estás haciendo genial. Tu cuerpo agradece esta calma."; icon = "✨"; }
+  if (pct > 60) { message = "¡Casi lo tienes! Estás transformando tu relación con la comida."; icon = "🧘"; }
+  if (pct >= 100) { message = "¡Increíble! Has completado el programa. Eres pura inspiración."; icon = "👑"; }
+
   screen.innerHTML = `
-    <section class="card">
-      <h2 class="h2">Tu progreso</h2>
-      <p class="p"><b>${pct}%</b> completado (${done} de ${total} módulos).</p>
-      <div class="grid2">
-        <div class="kpi"><b>${done}</b><small>Completados</small></div>
-        <div class="kpi"><b>${total - done}</b><small>Por hacer</small></div>
+    <section class="card" style="text-align:center; padding:40px 20px">
+      <div style="font-size:64px; margin-bottom:10px">${icon}</div>
+      <h2 class="h2" style="margin-bottom:8px">Tu Transformación</h2>
+      <p class="p" style="font-style:italic; color:var(--brand); font-weight:600">"${message}"</p>
+      
+      <!-- Barra de progreso visual -->
+      <div class="progress-container">
+        <div class="progress-bar" style="width: ${pct}%"></div>
       </div>
-      <div class="row" style="margin-top:16px">
-        <button class="btn" id="toModules">Ver módulos</button>
-        <button class="btn ghost" id="toHome">Inicio</button>
+      <p class="p" style="margin-top:10px">Has completado el <b>${pct}%</b> del camino</p>
+
+      <div class="grid2" style="margin-top:24px">
+        <div class="kpi">
+          <b>${done}</b>
+          <small>Módulos hechos</small>
+        </div>
+        <div class="kpi">
+          <b>${total - done}</b>
+          <small>Por descubrir</small>
+        </div>
       </div>
     </section>
+
+    <section class="card">
+      <h3 class="h2" style="font-size:18px">Recordatorio amable</h3>
+      <p class="p">La transformación no es una línea recta. Si un día no puedes, no pasa nada. Mañana la app seguirá aquí esperándote con la misma calma.</p>
+      
+      <div class="row" style="margin-top:20px">
+        <button class="btn" id="toModules">Continuar ahora</button>
+        <button class="btn ghost" id="toHome">Ir al inicio</button>
+      </div>
+    </section>
+
+    <div style="text-align:center; padding:20px">
+       <button class="chip" id="btnReset" style="opacity:0.6">Reiniciar todo el progreso</button>
+    </div>
   `;
+
   $("#toModules").onclick = () => setActiveTab("modules");
   $("#toHome").onclick = () => setActiveTab("home");
+  
+  // Re-vincular el reset ya que lo hemos movido aquí
+  $("#btnReset").onclick = () => {
+    if(confirm("¿Seguro que quieres borrar todo tu progreso? Esta acción no se puede deshacer.")){
+      localStorage.removeItem(STORAGE_KEY);
+      state = loadState();
+      setActiveTab("home");
+    }
+  };
 }
-
 /* ===== SERVICE WORKER + RESET ===== */
 function registerSW(){
   if("serviceWorker" in navigator){
