@@ -21,11 +21,29 @@ window.APP_DATA = {
   ],
 
   // Sección de ayuda rápida por estados (Lo que más valorarán tus clientes)
-  audioStates: [
-    { id: "s1", title: "Tengo un impulso ahora", desc: "Escúchalo antes de abrir la nevera.", file: "audio/module-3-daily.mp3", image: "https://images.unsplash.com/photo-1499209974431-9dddcece7f88?auto=format&fit=crop&w=150&q=60" },
-    { id: "s2", title: "Ansiedad nocturna", desc: "Para cerrar el día con paz.", file: "audio/module-5-daily.mp3", image: "https://images.unsplash.com/photo-1505489435671-80a165c62611?auto=format&fit=crop&w=300&q=60" },
-    { id: "s3", title: "Siento culpa", desc: "Para perdonarte y seguir adelante.", file: "audio/module-7-daily.mp3", image: "https://images.unsplash.com/photo-1516589174184-c685266d430c?auto=format&fit=crop&w=300&q=60" }
-  ],
+ audioStates: [
+    { 
+      id: "impulso", 
+      title: "Tengo un impulso", 
+      desc: "Siento urgencia por comer ahora mismo.",
+      image: "https://images.unsplash.com/photo-1499714608240-22fc6ad53fb2?auto=format&fit=crop&w=300&q=60", // Imagen de calma/pausa
+      file: AUDIO_CDN + "module-3-daily.mp3" + AUDIO_QS 
+    },
+    { 
+      id: "ansiedad", 
+      title: "Siento ansiedad", 
+      desc: "Nervios, tensión o vacío en el estómago.",
+      image: "https://images.unsplash.com/photo-1518241353330-0f7941c2d9b5?auto=format&fit=crop&w=300&q=60", // Imagen de respiración/paz
+      file: AUDIO_CDN + "module-5-daily.mp3" + AUDIO_QS 
+    },
+    { 
+      id: "culpa", 
+      title: "Siento culpa", 
+      desc: "He comido de más y me siento mal.",
+      image: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&w=300&q=60", // Imagen de autocompasión/suavidad
+      file: AUDIO_CDN + "module-1-daily.mp3" + AUDIO_QS 
+    }
+  ],,
 
   audios: [
     { id: "intro", title: "Bienvenida · Cómo usar CalmaComida", file: "audio/intro-curso.mp3" },
