@@ -23,8 +23,8 @@ window.APP_DATA = {
   // Sección de ayuda rápida por estados (Lo que más valorarán tus clientes)
   audioStates: [
     { id: "s1", title: "Tengo un impulso ahora", desc: "Escúchalo antes de abrir la nevera.", file: "audio/module-3-daily.mp3", image: "https://images.unsplash.com/photo-1499209974431-9dddcece7f88?auto=format&fit=crop&w=150&q=60" },
-    { id: "s2", title: "Ansiedad nocturna", desc: "Para cerrar el día con paz.", file: "audio/module-5-daily.mp3", image: "https://images.unsplash.com/photo-1505489435671-80a165c62611?auto=format&fit=crop&w=150&q=60" },
-    { id: "s3", title: "Siento culpa", desc: "Para perdonarte y seguir adelante.", file: "audio/module-7-daily.mp3", image: "https://images.unsplash.com/photo-1516589174184-c685266d430c?auto=format&fit=crop&w=150&q=60" }
+    { id: "s2", title: "Ansiedad nocturna", desc: "Para cerrar el día con paz.", file: "audio/module-5-daily.mp3", image: "https://images.unsplash.com/photo-1505489435671-80a165c62611?auto=format&fit=crop&w=300&q=60" },
+    { id: "s3", title: "Siento culpa", desc: "Para perdonarte y seguir adelante.", file: "audio/module-7-daily.mp3", image: "https://images.unsplash.com/photo-1516589174184-c685266d430c?auto=format&fit=crop&w=300&q=60" }
   ],
 
   audios: [

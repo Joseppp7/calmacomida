@@ -1,135 +1,337 @@
-// CalmaComida Premium Engine 2026
+// === BOOTSTRAP: asegura APP_DATA antes de usarlo ===
+(function waitForData(){
+  if (window.APP_DATA) { return; }
+  if (!window.__DATA_WAIT_START) window.__DATA_WAIT_START = Date.now();
+  if (Date.now() - window.__DATA_WAIT_START > 2000) {
+    document.body.innerHTML = `<pre style="padding:12px">[CalmaComida ERROR]\nNo se cargó data.js</pre>`;
+    return;
+  }
+  setTimeout(waitForData, 50);
+})();
+
 const $ = (sel) => document.querySelector(sel);
 const screen = $("#screen");
-const STORAGE_KEY = "calmacomida_v4";
+const STORAGE_KEY = "calmacomida_state_v3";
 
-let state = JSON.parse(localStorage.getItem(STORAGE_KEY)) || { done: {}, lastTab: "home" };
+let state = loadState();
 
-function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+function loadState(){
+  try{
+    return JSON.parse(localStorage.getItem(STORAGE_KEY)) || { done:{}, lastTab:"home", streak:0, lastCompleted:null };
+  }catch{ return { done:{}, lastTab:"home", streak:0, lastCompleted:null }; }
+}
 
-function setActiveTab(tab) {
+function saveState(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+
+function stats(){
+  const total = APP_DATA.modules.length;
+  const done = Object.values(state.done).filter(Boolean).length;
+  const pct = total ? Math.round((done/total)*100) : 0;
+  return { total, done, pct };
+}
+
+function setActiveTab(tab){
   document.querySelectorAll(".tab").forEach(b => b.classList.toggle("active", b.dataset.tab === tab));
   state.lastTab = tab;
-  save();
+  saveState();
   render(tab);
 }
 
-function render(tab) {
-  if (tab === "home") renderHome();
-  if (tab === "modules") renderModules();
-  if (tab === "audio") renderAudios();
-  if (tab === "progress") renderProgress();
+function render(tab){
+  if(tab === "home") return renderHome();
+  if(tab === "modules") return renderModules();
+  if(tab === "audio") return renderAudios();
+  if(tab === "progress") return renderProgress();
 }
 
-function renderHome() {
-  const done = Object.values(state.done).filter(Boolean).length;
-  const total = APP_DATA.modules.length;
-  
+/* ===== HOME ===== */
+function renderHome(){
+  const {done, total, pct} = stats();
+
   screen.innerHTML = `
-    <div class="hero">
-      <img class="heroImg" src="${APP_DATA.coverImage}">
+
+    <!-- HERO -->
+    <section class="hero">
+      <img class="heroImg" src="${APP_DATA.coverImage || ""}" alt="Portada" onerror="this.style.display='none'">
       <div class="heroContent">
-        <h2 style="margin:0">Tu camino a la paz</h2>
-        <p style="opacity:0.9">Regula tu relación con la comida sin dietas ni lucha.</p>
+        <p class="heroTitle">Tu relación con la comida puede volverse más ligera</p>
+        <p class="heroText">No es fuerza de voluntad. Es regulación + hábito.</p>
       </div>
-    </div>
-    
-    <div class="card">
-      <h3>¿Cómo te sientes hoy?</h3>
-      <p>Si tienes un momento difícil ahora mismo, ve directo a Ayuda Rápida.</p>
-      <button class="btn" id="btnQuick">Ayuda Rápida</button>
-      <button class="btn ghost" id="btnStart">Continuar Programa</button>
-    </div>
+    </section>
 
-    <div class="card">
-      <h3>Tu progreso</h3>
-      <p>Has completado <b>${done} de ${total}</b> pasos de tu transformación.</p>
-    </div>
+    <!-- CÓMO USAR LA APP -->
+    <section class="card" style="margin-top:16px">
+      <h2 class="h2">¿Cómo usar CalmaComida?</h2>
+
+      <div class="howto-step">
+        <div class="howto-icon">🌅</div>
+        <div>
+          <b>Cada día: el módulo del día</b>
+          <p class="p">Abre <b>Módulos</b> y escucha el audio principal en un momento tranquilo. Puedes hacerlo por la mañana, a mediodía o cuando tengas 10 minutos para ti.</p>
+        </div>
+      </div>
+
+      <div class="howto-step">
+        <div class="howto-icon">🍽️</div>
+        <div>
+          <b>Antes de comer: la práctica diaria</b>
+          <p class="p">Dentro de cada módulo hay un audio corto de práctica. Escúchalo justo antes de sentarte a comer. Cambia cómo te sientes en la mesa.</p>
+        </div>
+      </div>
+
+      <div class="howto-step">
+        <div class="howto-icon">🆘</div>
+        <div>
+          <b>En un momento difícil: Ayuda Rápida</b>
+          <p class="p">Si sientes un impulso, ansiedad o culpa, ve directamente a la pestaña <b>Audios</b>. Hay audios cortos para ese momento exacto.</p>
+        </div>
+      </div>
+
+      <div class="howto-step">
+        <div class="howto-icon">✅</div>
+        <div>
+          <b>Marca lo que completas</b>
+          <p class="p">Al terminar cada módulo, pulsa "Marcar como terminado". Tu progreso se guarda en este dispositivo.</p>
+        </div>
+      </div>
+
+      <div class="howto-tip">
+        💡 <b>No necesitas hacerlo perfecto. Solo constante.</b><br>
+        Un día a la vez es suficiente.
+      </div>
+
+      <div class="row" style="margin-top:16px">
+        <button class="btn" id="goModules">Empezar módulos</button>
+        <button class="btn ghost" id="goAudio">Ayuda rápida</button>
+      </div>
+    </section>
+
+    <!-- PROGRESO -->
+    <section class="card">
+      <h2 class="h2">Tu progreso</h2>
+      <div class="grid2">
+        <div class="kpi">
+          <b>${pct}%</b>
+          <small>Completado</small>
+        </div>
+        <div class="kpi">
+          <b>${done}/${total}</b>
+          <small>Módulos marcados</small>
+        </div>
+      </div>
+    </section>
+
   `;
-  
-  $("#btnQuick").onclick = () => setActiveTab("audio");
-  $("#btnStart").onclick = () => setActiveTab("modules");
+
+  $("#goModules").onclick = () => setActiveTab("modules");
+  $("#goAudio").onclick = () => setActiveTab("audio");
 }
 
-function renderModules() {
-  const list = APP_DATA.modules.map(m => `
-    <div class="item" onclick="openModule('${m.id}')">
-      <img src="${m.image}" class="audioThumb">
-      <div style="flex:1">
-        <div style="font-weight:800">${m.title}</div>
-        <div style="font-size:12px; color:var(--muted)">${m.desc}</div>
+/* ===== MODULES LIST ===== */
+function renderModules(){
+  const items = APP_DATA.modules.map(m => {
+    const isDone = !!state.done[m.id];
+    return `
+      <div class="item" data-open="${m.id}">
+        <div>
+          <div class="itemTitle">${m.title || ("Módulo " + m.id)}</div>
+          <div class="itemSub">${m.desc || ""}</div>
+        </div>
+        <span class="badge ${isDone ? 'done' : ''}">${isDone ? "✅ Hecho" : "Pendiente"}</span>
       </div>
-      <div>${state.done[m.id] ? '✅' : '⚪'}</div>
-    </div>
-  `).join("");
-  
-  screen.innerHTML = `<div class="card"><h2>Programa Guiado</h2>${list}</div>`;
+    `;
+  }).join("");
+
+  screen.innerHTML = `
+    <section class="card">
+      <h2 class="h2">Módulos</h2>
+      <p class="p">Un módulo al día. Escucha el audio y haz la práctica antes de comer.</p>
+      <div class="list">${items}</div>
+    </section>
+  `;
+
+  screen.querySelectorAll("[data-open]").forEach(el => {
+    el.onclick = () => openModule(el.dataset.open);
+  });
 }
 
-function openModule(id) {
+/* ===== MODULE DETAIL ===== */
+function openModule(id){
   const m = APP_DATA.modules.find(x => x.id === id);
+  if(!m){ alert("No se encontró el módulo."); return; }
+  const isDone = !!state.done[id];
+
   screen.innerHTML = `
-    <div class="card">
-      <button class="btn ghost" onclick="renderModules()" style="width:auto; padding:8px 15px">← Volver</button>
-      <h2 style="margin-top:15px">${m.title}</h2>
-      <img src="${m.image}" style="width:100%; border-radius:15px; margin:10px 0">
-      <p><i>"${m.phrase}"</i></p>
-      <div style="background:var(--soft); padding:15px; border-radius:15px; margin:15px 0">
-        <b>Objetivo:</b> ${m.goal}
+    <section class="card">
+      <div style="display:flex; justify-content:space-between; gap:10px; align-items:flex-start">
+        <div>
+          <h2 class="h2" style="margin-bottom:4px">${m.title}</h2>
+          <p class="p">${m.desc || ""}</p>
+        </div>
+        <button class="chip" id="btnBack">Volver</button>
       </div>
-      <audio controls src="${m.audio}" style="width:100%"></audio>
-      <button class="btn" onclick="toggleDone('${m.id}')">${state.done[m.id] ? 'Completado ✓' : 'Marcar como hecho'}</button>
-    </div>
+
+      <div class="moduleHero">
+        <img class="moduleHeroImg" src="${m.image || ""}" alt="Imagen del módulo" onerror="this.style.display='none'">
+        <div class="moduleHeroOverlay">
+          <div class="moduleHeroCaption">${m.phrase || ""}</div>
+        </div>
+      </div>
+
+      <div style="margin-top:14px">
+        <div class="kpi" style="background:var(--soft)">
+          <b>🎯 Objetivo del módulo</b>
+          <small>${m.goal || "—"}</small>
+        </div>
+      </div>
+
+      <div style="margin-top:10px">
+        <div class="kpi" style="background:var(--soft)">
+          <b>✨ Qué puedes esperar</b>
+          <small>${m.expect || "—"}</small>
+        </div>
+      </div>
+
+      <div class="audioBox">
+        <div style="font-weight:900; margin-bottom:8px">🎧 Audios del módulo</div>
+        ${(m.audio || m.daily) ? `
+          <audio id="player" controls src="${m.audio || ""}"></audio>
+          <div class="row" style="margin-top:10px">
+            <button class="btn ghost" id="btnMainAudio" ${m.audio ? "" : "disabled"}>▶ Sesión principal</button>
+            <button class="btn" id="btnDailyAudio" ${m.daily ? "" : "disabled"}>☀ Práctica diaria</button>
+          </div>
+          <div class="howto-tip" style="margin-top:12px">
+            🍽️ <b>Consejo:</b> Usa la <b>Práctica diaria</b> justo antes de comer o cuando notes ansiedad o impulso.
+          </div>
+        ` : `<p class="p">Este módulo aún no tiene audio asignado.</p>`}
+      </div>
+
+      <div class="row">
+        <button class="btn" id="btnDone">${isDone ? "Marcar como NO terminado" : "Marcar como terminado ✓"}</button>
+        <button class="btn ghost" id="btnNext">Siguiente módulo →</button>
+      </div>
+    </section>
   `;
+
+  $("#btnBack").onclick = () => renderModules();
+
+  const player = document.getElementById("player");
+  const btnMain = document.getElementById("btnMainAudio");
+  if(btnMain && m.audio && player){
+    btnMain.onclick = () => { player.src = m.audio; player.play().catch(()=>{}); };
+  }
+  const btnDaily = document.getElementById("btnDailyAudio");
+  if(btnDaily && m.daily && player){
+    btnDaily.onclick = () => { player.src = m.daily; player.play().catch(()=>{}); };
+  }
+
+  $("#btnDone").onclick = () => {
+    state.done[id] = !state.done[id];
+    if(state.done[id]) state.lastCompleted = new Date().toISOString();
+    saveState();
+    openModule(id);
+  };
+
+  $("#btnNext").onclick = () => {
+    const idx = APP_DATA.modules.findIndex(x => x.id === id);
+    const next = APP_DATA.modules[idx + 1];
+    if(next) openModule(next.id);
+    else alert("¡Has completado todos los módulos! 🎉");
+  };
 }
 
-window.toggleDone = (id) => {
-  state.done[id] = !state.done[id];
-  save();
-  openModule(id);
-};
-
-function renderAudios() {
-  const quick = APP_DATA.audioStates.map(a => `
-    <div class="item" onclick="playAudio('${a.file}')">
-      <img src="${a.image}" class="audioThumb">
-      <div>
-        <div style="font-weight:800">${a.title}</div>
-        <div style="font-size:12px">${a.desc}</div>
+/* ===== AUDIOS (AYUDA RÁPIDA) ===== */
+function renderAudios(){
+  const estados = (APP_DATA.audioStates || []).map(a => `
+    <div class="item">
+      <img class="audioThumb" src="${a.image || ''}" alt="${a.title}"
+           onerror="this.src='https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&w=150&q=60'">
+      <div style="flex:1">
+        <div class="itemTitle">${a.title}</div>
+        <div class="itemSub">${a.desc || ""}</div>
       </div>
+      <button class="chip" data-audio="${a.file}" title="Reproducir">▶</button>
+    </div>
+  `).join("");
+
+  const todos = (APP_DATA.audios || []).map(a => `
+    <div class="item">
+      <div style="flex:1">
+        <div class="itemTitle">${a.title}</div>
+      </div>
+      <button class="chip" data-audio="${a.file || a.src}" title="Reproducir">▶</button>
     </div>
   `).join("");
 
   screen.innerHTML = `
-    <div class="card">
-      <h2>Ayuda Rápida</h2>
-      <p>Audios cortos para momentos críticos.</p>
-      ${quick}
-    </div>
-    <div class="card">
-      <audio id="mainPlayer" controls style="width:100%"></audio>
-    </div>
+    <section class="card">
+      <h2 class="h2">🆘 Ayuda Rápida</h2>
+      <p class="p">¿Tienes un momento difícil ahora mismo? Elige cómo te sientes:</p>
+      <div class="list">${estados}</div>
+    </section>
+
+    <section class="card">
+      <h2 class="h2">🎧 Todos los audios</h2>
+      <p class="p">Repite cualquier práctica cuando lo necesites.</p>
+      <div class="list">${todos}</div>
+    </section>
+
+    <section class="card">
+      <audio id="player2" controls style="width:100%"></audio>
+    </section>
   `;
+
+  screen.querySelectorAll("[data-audio]").forEach(btn => {
+    btn.onclick = () => {
+      const p = $("#player2");
+      p.src = btn.dataset.audio;
+      p.play().catch(()=>{});
+      p.scrollIntoView({ behavior: "smooth" });
+    };
+  });
 }
 
-window.playAudio = (file) => {
-  const p = $("#mainPlayer");
-  p.src = file;
-  p.play();
-};
-
-function renderProgress() {
-  const done = Object.values(state.done).filter(Boolean).length;
+/* ===== PROGRESS ===== */
+function renderProgress(){
+  const {done, total, pct} = stats();
   screen.innerHTML = `
-    <div class="card" style="text-align:center">
-      <h2>Tu Transformación</h2>
-      <div style="font-size:48px; margin:20px 0">🌱</div>
-      <p>Has dado <b>${done}</b> pasos hacia una vida más libre.</p>
-      <button class="btn ghost" onclick="if(confirm('¿Resetear?')) {state.done={}; save(); render('progress');}">Reiniciar progreso</button>
-    </div>
+    <section class="card">
+      <h2 class="h2">Tu progreso</h2>
+      <p class="p"><b>${pct}%</b> completado (${done} de ${total} módulos).</p>
+      <div class="grid2">
+        <div class="kpi"><b>${done}</b><small>Completados</small></div>
+        <div class="kpi"><b>${total - done}</b><small>Por hacer</small></div>
+      </div>
+      <div class="row" style="margin-top:16px">
+        <button class="btn" id="toModules">Ver módulos</button>
+        <button class="btn ghost" id="toHome">Inicio</button>
+      </div>
+    </section>
   `;
+  $("#toModules").onclick = () => setActiveTab("modules");
+  $("#toHome").onclick = () => setActiveTab("home");
 }
 
-// Inicialización
-document.querySelectorAll(".tab").forEach(t => t.onclick = () => setActiveTab(t.dataset.tab));
-setActiveTab("home");
+/* ===== SERVICE WORKER + RESET ===== */
+function registerSW(){
+  if("serviceWorker" in navigator){
+    navigator.serviceWorker.register("./service-worker.js").catch(()=>{});
+  }
+}
+
+$("#btnReset").addEventListener("click", () => {
+  if(confirm("¿Borrar el progreso guardado en este dispositivo?")){
+    localStorage.removeItem(STORAGE_KEY);
+    state = loadState();
+    setActiveTab("home");
+  }
+});
+
+/* ===== START ===== */
+document.getElementById("appTitle").textContent = APP_DATA.name;
+document.getElementById("appSubtitle").textContent = APP_DATA.subtitle;
+document.querySelectorAll(".tab").forEach(btn => {
+  btn.addEventListener("click", () => setActiveTab(btn.dataset.tab));
+});
+registerSW();
+setActiveTab(state.lastTab || "home");

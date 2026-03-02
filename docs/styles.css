@@ -134,4 +134,26 @@ h1 {
 
 .tab.active {
   color: var(--brand);
+} /* === CÓMO USAR LA APP === */
+.howto-step {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  margin-bottom: 18px;
+}
+
+.howto-icon {
+  font-size: 28px;
+  min-width: 36px;
+  text-align: center;
+}
+
+.howto-tip {
+  background: var(--soft);
+  border-left: 4px solid var(--brand);
+  border-radius: 12px;
+  padding: 14px 16px;
+  font-size: 14px;
+  line-height: 1.6;
+  margin-top: 10px;
 }
