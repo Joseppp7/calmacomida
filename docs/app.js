@@ -378,3 +378,81 @@ document.querySelectorAll(".tab").forEach(btn => {
 });
 registerSW();
 setActiveTab(state.lastTab || "home");
+/* ===== MODULES LIST (CON IMÁGENES RECUPERADAS) ===== */
+function renderModules(){
+  const items = APP_DATA.modules.map(m => {
+    const isDone = !!state.done[m.id];
+    // Usamos la imagen del módulo o una por defecto si falla
+    const imgUrl = m.image || `https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=500&q=60`;
+    
+    return `
+      <div class="item" data-open="${m.id}" style="align-items: center; padding: 12px;">
+        <img src="${imgUrl}" class="audioThumb" style="width: 70px; height: 70px; object-fit: cover; border-radius: 12px; margin-right: 15px;">
+        <div style="flex:1">
+          <div class="itemTitle" style="font-weight: 800; font-size: 16px;">${m.title}</div>
+          <div class="itemSub" style="font-size: 12px; color: var(--muted); line-height: 1.3;">${m.desc}</div>
+        </div>
+        <div style="margin-left: 10px;">
+          ${isDone ? '<span style="font-size: 20px;">✅</span>' : '<span style="font-size: 20px; opacity: 0.2;">⚪</span>'}
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  screen.innerHTML = `
+    <section class="card">
+      <h2 class="h2">Programa de Transformación</h2>
+      <p class="p">Un paso a la vez. Elige el módulo de hoy:</p>
+      <div class="list" style="margin-top: 15px;">${items}</div>
+    </section>
+  `;
+
+  screen.querySelectorAll("[data-open]").forEach(el => {
+    el.onclick = () => openModule(el.dataset.open);
+  });
+}
+
+/* ===== AYUDA RÁPIDA (LIMPIA Y DIRECTA) ===== */
+function renderAudios(){
+  // Solo mostramos los estados de ánimo críticos, sin la lista de módulos abajo
+  const estados = (APP_DATA.audioStates || []).map(a => `
+    <div class="item" onclick="playDirect('${a.file}')" style="cursor: pointer; padding: 15px; margin-bottom: 15px; background: var(--soft); border-radius: 20px; display: flex; align-items: center;">
+      <img src="${a.image}" class="audioThumb" style="width: 80px; height: 80px; border-radius: 15px; margin-right: 15px; object-fit: cover;">
+      <div style="flex:1">
+        <div style="font-weight: 900; font-size: 18px; color: var(--brand);">${a.title}</div>
+        <div style="font-size: 13px; color: var(--text); opacity: 0.8;">${a.desc}</div>
+      </div>
+      <div style="background: var(--brand); color: white; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px;">▶</div>
+    </div>
+  `).join("");
+
+  screen.innerHTML = `
+    <section class="card" style="border: 2px solid var(--accent); background: #fffcf9;">
+      <h2 class="h2" style="color: var(--brand);">🆘 Ayuda Ahora</h2>
+      <p class="p" style="margin-bottom: 20px;">No luches sola. Elige cómo te sientes y escucha el audio:</p>
+      
+      <div class="list">${estados}</div>
+      
+      <div id="playerContainer" style="display: none; margin-top: 20px; padding: 15px; background: white; border-radius: 15px; box-shadow: var(--shadow);">
+        <p style="font-weight: 800; font-size: 14px; margin-bottom: 10px; text-align: center;">Reproduciendo audio de calma...</p>
+        <audio id="quickPlayer" controls style="width: 100%;"></audio>
+      </div>
+    </section>
+
+    <section class="card" style="opacity: 0.7;">
+      <h3 class="h2" style="font-size: 16px;">Otros audios</h3>
+      <p class="p">Si buscas la introducción o sesiones pasadas:</p>
+      <button class="btn ghost" onclick="setActiveTab('modules')">Ver todos los módulos</button>
+    </section>
+  `;
+}
+
+// Función auxiliar para reproducir directamente en Ayuda Rápida
+window.playDirect = (file) => {
+  const container = document.getElementById("playerContainer");
+  const player = document.getElementById("quickPlayer");
+  container.style.display = "block";
+  player.src = file;
+  player.play();
+  container.scrollIntoView({ behavior: "smooth" });
+};
