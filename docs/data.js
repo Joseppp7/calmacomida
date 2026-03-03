@@ -67,4 +67,25 @@ window.APP_DATA = {
   ]
 };
 
+// Sección de Ayuda SOS
+  ayudaSOS: [
+    { 
+      id: "sos-impulso", title: "Tengo un impulso ahora", 
+      desc: "Para 2 minutos. Escucha este audio antes de decidir si comer o no.",
+      image: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&w=400&q=60",
+      file: AUDIO_CDN + "module-3-daily.mp3" + AUDIO_QS 
+    },
+    { 
+      id: "sos-ansiedad", title: "Siento mucha ansiedad", 
+      desc: "Tu cuerpo está activado. Vamos a bajar las pulsaciones juntos.",
+      image: "https://images.unsplash.com/photo-1518241353330-0f7941c2d9b5?auto=format&fit=crop&w=400&q=60",
+      file: AUDIO_CDN + "module-5-daily.mp3" + AUDIO_QS 
+    },
+    { 
+      id: "sos-culpa", title: "Me siento mal por haber comido", 
+      desc: "La culpa solo genera más hambre emocional. Vamos a soltarla.",
+      image: "https://images.unsplash.com/photo-1499714608240-22fc6ad53fb2?auto=format&fit=crop&w=400&q=60",
+      file: AUDIO_CDN + "module-7-daily.mp3" + AUDIO_QS 
+    }
+  ]
 var APP_DATA = window.APP_DATA;

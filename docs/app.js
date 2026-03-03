@@ -217,43 +217,65 @@
     };
   }
 
-  function renderAudios() {
-    var list = window.APP_DATA.audios || [];
-    var html =
-      '<section class="card">' +
-        '<h2 class="h2">Audios</h2>' +
-        '<p class="p">Toca un audio para reproducirlo. Recomendación: si estás nerviosa/o, usa una <b>práctica diaria</b>.</p>' +
-        '<div class="list">';
+ function renderAudios() {
+    var sos = window.APP_DATA.ayudaSOS || [];
+    var otros = window.APP_DATA.audios || [];
+    
+    var html = '<section class="card">' +
+               '<h2 class="h2">🆘 Ayuda Rápida</h2>' +
+               '<p class="p">Elige lo que sientes ahora mismo para recibir ayuda inmediata.</p>' +
+               '<div class="list">';
 
-    for (var i = 0; i < list.length; i++) {
-      var a = list[i];
+    // 1. Botones SOS con Imagen y Texto
+    for (var i = 0; i < sos.length; i++) {
+      var s = sos[i];
       html +=
-        '<div class="item" onclick="window.__playAudio(\'' + esc(a.file) + '\', \'' + esc(a.title) + '\')">' +
+        '<div class="item" style="padding:0; overflow:hidden; flex-direction:column; align-items:stretch" onclick="window.__playSOS(\'' + esc(s.file) + '\', \'' + esc(s.title) + '\')">' +
+          '<img src="' + esc(s.image) + '" style="width:100%; height:100px; object-fit:cover; border-radius:0" />' +
+          '<div style="padding:14px">' +
+            '<div class="itemTitle">' + esc(s.title) + '</div>' +
+            '<div class="itemSub" style="margin-top:4px">' + esc(s.desc) + '</div>' +
+          '</div>' +
+        '</div>';
+    }
+
+    html += '</div></section>';
+
+    // 2. Lista de otros audios (Intro, Cierre, etc.)
+    html += '<section class="card" style="margin-top:16px">' +
+            '<h2 class="h2">🎧 Todos los Audios</h2>' +
+            '<div class="list">';
+    
+    for (var j = 0; j < otros.length; j++) {
+      var a = otros[j];
+      html +=
+        '<div class="item" onclick="window.__playSOS(\'' + esc(a.file) + '\', \'' + esc(a.title) + '\')">' +
           '<div style="flex:1">' +
             '<div class="itemTitle">' + esc(a.title) + '</div>' +
-            '<div class="itemSub">Toca para reproducir</div>' +
+            '<div class="itemSub">Toca para escuchar</div>' +
           '</div>' +
           '<div class="badge">▶</div>' +
         '</div>';
     }
 
-    html +=
-        '</div>' +
-        '<div class="card" style="margin-top:14px; background:var(--soft)">' +
-          '<div class="itemTitle" id="audioTitle">Reproductor</div>' +
-          '<audio id="audioPlayer" controls preload="metadata"></audio>' +
-        '</div>' +
-      '</section>';
+    html += '</div>' +
+            '<div id="sosPlayerBox" style="display:none; margin-top:20px; padding:16px; background:var(--soft); border-radius:16px; border:1px solid var(--accent)">' +
+              '<div id="sosTitle" style="font-weight:900; color:var(--brand); margin-bottom:10px"></div>' +
+              '<audio id="sosAudio" controls style="width:100%"></audio>' +
+            '</div>' +
+            '</section>';
 
     screen.innerHTML = html;
 
-    window.__playAudio = function (file, title) {
-      var t = document.getElementById("audioTitle");
-      var p = document.getElementById("audioPlayer");
-      t.textContent = title || "Reproductor";
+    window.__playSOS = function(file, title) {
+      var box = document.getElementById("sosPlayerBox");
+      var t = document.getElementById("sosTitle");
+      var p = document.getElementById("sosAudio");
+      t.textContent = "Reproduciendo: " + title;
+      box.style.display = "block";
       p.src = file;
-      p.play && p.play();
-      p.scrollIntoView({ behavior: "smooth", block: "start" });
+      p.play();
+      box.scrollIntoView({ behavior: "smooth", block: "center" });
     };
   }
 
