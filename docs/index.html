@@ -1,28 +1,37 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>CalmaComida</title>
- <link rel="stylesheet" href="./styles.css?v=1000" />
-  <link rel="manifest" href="manifest.json">
+
+  <link rel="icon" href="./favicon.ico" />
+  <link rel="manifest" href="./manifest.json" />
+  <meta name="theme-color" content="#1f3b34" />
+
+  <link rel="stylesheet" href="./styles.css?v=1000" />
 </head>
 <body>
+  <div class="app">
+    <header class="topbar">
+      <div>
+        <h1 id="appTitle">CalmaComida</h1>
+        <p class="subtitle" id="appSubtitle">Calma · Claridad · Elección</p>
+      </div>
+      <button class="chip" id="btnReset" title="Reset progreso">Reset</button>
+    </header>
 
-  <header class="header">
-    <span class="headerTitle">🌿 CalmaComida</span>
-  </header>
+    <main class="screen" id="screen"></main>
 
-  <main id="screen" class="screen"></main>
+    <nav class="tabbar">
+      <button class="tab active" data-tab="home">🏠 Inicio</button>
+      <button class="tab" data-tab="modules">📚 Módulos</button>
+      <button class="tab" data-tab="audio">🆘 Ayuda</button>
+      <button class="tab" data-tab="progress">🌱 Progreso</button>
+    </nav>
+  </div>
 
-  <nav class="tabBar">
-    <button class="tab active" data-tab="home">🏠<span>Inicio</span></button>
-    <button class="tab" data-tab="modules">📚<span>Módulos</span></button>
-    <button class="tab" data-tab="audio">🆘<span>Ayuda</span></button>
-    <button class="tab" data-tab="progress">🌱<span>Progreso</span></button>
-  </nav>
-
-< script  src = "data.js?v=1000" > </ script > 
-< script  src = "app.js?v=1000" > </ script > 
-</ cuerpo > 
-</ html >
+  <script src="data.js?v=1000"></script>
+  <script src="app.js?v=1000"></script>
+</body>
+</html>
