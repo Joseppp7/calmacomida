@@ -1,256 +1,219 @@
-// ===== CALMACOMIDA · APP v702 (con gradientes) =====
-(function () {
-  'use strict';
+// ===== CALMACOMIDA · APP v705 (FIXED) =====
 
-  // ── Estado ──────────────────────────────────────────────
-  var STORAGE_KEY = 'calmacomida_v3';
-  var state = load();
+let state = {
+  currentTab: 'home',
+  currentModule: null,
+  progress: JSON.parse(localStorage.getItem('calma_progress') || '{}')
+};
 
-  function load() {
-    try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; }
-    catch (e) { return {}; }
-  }
-  function save() {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
-    catch (e) {}
-  }
+// DOM
+const screen = document.getElementById('screen');
+const tabs = document.querySelectorAll('.tab');
+const btnReset = document.getElementById('btnReset');
 
-  // ── Referencias DOM ─────────────────────────────────────
-  var screen   = document.getElementById('screen');
-  var tabs     = document.querySelectorAll('.tab');
-  var btnReset = document.getElementById('btnReset');
-
-  // ── Navegación ──────────────────────────────────────────
-  var currentTab = 'home';
-
-  tabs.forEach(function (tab) {
-    tab.addEventListener('click', function () {
-      tabs.forEach(function (t) { t.classList.remove('active'); });
-      tab.classList.add('active');
-      currentTab = tab.dataset.tab;
-      render(currentTab);
-    });
+// Navigation
+tabs.forEach(tab => {
+  tab.addEventListener('click', () => {
+    const target = tab.dataset.tab;
+    navigate(target);
   });
+});
 
-  btnReset.addEventListener('click', function () {
-    if (confirm('¿Reiniciar todo el progreso?')) {
-      state = {};
-      save();
-      render(currentTab);
-    }
-  });
+btnReset.addEventListener('click', () => {
+  if (confirm('¿Resetear todo el progreso?')) {
+    localStorage.clear();
+    state.progress = {};
+    render();
+  }
+});
 
-  // ── Gradientes por módulo ───────────────────────────────
-  var gradients = [
-    'linear-gradient(135deg, #7D9D85 0%, #A8C5B0 100%)',
-    'linear-gradient(135deg, #D4A373 0%, #E8C9A0 100%)',
-    'linear-gradient(135deg, #2C3E3A 0%, #5A6F68 100%)',
-    'linear-gradient(135deg, #A8C5B0 0%, #7D9D85 100%)',
-    'linear-gradient(135deg, #E8C9A0 0%, #D4A373 100%)',
-    'linear-gradient(135deg, #7D9D85 0%, #D4A373 100%)',
-    'linear-gradient(135deg, #5A6F68 0%, #7D9D85 100%)'
-  ];
+function navigate(tabName) {
+  state.currentTab = tabName;
+  tabs.forEach(t => t.classList.toggle('active', t.dataset.tab === tabName));
+  render();
+}
 
-  function getGradient(index) {
-    return gradients[index % gradients.length];
+// Render
+function render() {
+  switch(state.currentTab) {
+    case 'home': renderHome(); break;
+    case 'modules': renderModules(); break;
+    case 'audio': renderAudios(); break;
+    case 'progress': renderProgress(); break;
+  }
+}
+
+// HOME
+function renderHome() {
+  screen.innerHTML = `
+    <div class="hero" style="background: linear-gradient(135deg, #7D9D85 0%, #C17B6F 100%); padding: 3rem 1.5rem; text-align: center; color: white; border-radius: 24px; margin-bottom: 2rem;">
+      <h1 style="font-family: 'Playfair Display', serif; font-size: 2rem; margin-bottom: 1rem; line-height: 1.3;">
+        Recupera la paz con la comida
+      </h1>
+      <p style="font-size: 1.1rem; opacity: 0.95; margin-bottom: 2rem; line-height: 1.6;">
+        Sin dietas. Sin restricciones. Solo tú, aprendiendo a cuidarte de verdad.
+      </p>
+      <button onclick="navigate('modules')" style="background: white; color: #7D9D85; padding: 1rem 2.5rem; border: none; border-radius: 50px; font-weight: 600; font-size: 1.1rem; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+        Comenzar ahora
+      </button>
+    </div>
+
+    <h2 style="font-family: 'Playfair Display', serif; font-size: 1.5rem; margin-bottom: 1.5rem; color: #2C3E37;">
+      Tu camino hacia la calma
+    </h2>
+    <div class="grid">
+      ${APP_DATA.modules.slice(0, 3).map(mod => `
+        <div class="card" onclick="openModule('${mod.id}')" style="cursor: pointer;">
+          <div style="width: 100%; height: 180px; border-radius: 16px; overflow: hidden; margin-bottom: 1rem; background: #E8EBE9;">
+            <img src="images/module-${mod.id.replace('mod', '')}.jpg" alt="${mod.title}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.style.display='none'">
+          </div>
+          <h3 style="font-size: 1.1rem; font-weight: 600; margin-bottom: 0.5rem; color: #2C3E37;">${mod.title}</h3>
+          <p style="font-size: 0.9rem; color: #6B7C73; line-height: 1.5;">${mod.subtitle}</p>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+// MODULES
+function renderModules() {
+  if (state.currentModule) {
+    renderModuleDetail();
+    return;
   }
 
-  // ── Render principal ────────────────────────────────────
-  function render(tab) {
-    screen.innerHTML = '';
-    if (tab === 'home')     renderHome();
-    if (tab === 'modules')  renderModules();
-    if (tab === 'audio')    renderAudios();
-    if (tab === 'progress') renderProgress();
-  }
+  screen.innerHTML = `
+    <h1 style="font-family: 'Playfair Display', serif; font-size: 1.8rem; margin-bottom: 1.5rem; color: #2C3E37;">
+      Módulos de aprendizaje
+    </h1>
+    <div class="list">
+      ${APP_DATA.modules.map((mod, i) => `
+        <div class="card" onclick="openModule('${mod.id}')" style="cursor: pointer; display: flex; gap: 1rem; align-items: center;">
+          <div style="width: 100px; height: 100px; border-radius: 12px; overflow: hidden; flex-shrink: 0; background: #E8EBE9;">
+            <img src="images/module-${mod.id.replace('mod', '')}.jpg" alt="${mod.title}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.style.display='none'">
+          </div>
+          <div style="flex: 1;">
+            <div style="font-size: 0.75rem; font-weight: 600; color: #7D9D85; margin-bottom: 0.25rem;">MÓDULO ${i + 1}</div>
+            <h3 style="font-size: 1.1rem; font-weight: 600; margin-bottom: 0.25rem; color: #2C3E37;">${mod.title}</h3>
+            <p style="font-size: 0.85rem; color: #6B7C73;">${mod.subtitle}</p>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
 
-  // ── INICIO ──────────────────────────────────────────────
-  function renderHome() {
-    var done = Object.keys(state).filter(function (k) { return state[k] && state[k].done; }).length;
-    var total = APP_DATA.modules.length;
+function openModule(id) {
+  state.currentModule = APP_DATA.modules.find(m => m.id === id);
+  render();
+}
 
-    screen.innerHTML =
-      '<div class="hero">' +
-        '<div class="heroContent">' +
-          '<h2 class="heroTitle">Recupera la paz<br>con la comida</h2>' +
-          '<p class="heroText">Sin dietas. Sin culpa. Solo comprensión y herramientas reales para ti.</p>' +
-        '</div>' +
-      '</div>' +
+function renderModuleDetail() {
+  const mod = state.currentModule;
+  const modNum = mod.id.replace('mod', '');
+  
+  screen.innerHTML = `
+    <button onclick="closeModule()" style="background: none; border: none; color: #7D9D85; font-size: 1rem; margin-bottom: 1rem; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; padding: 0;">
+      ← Volver a módulos
+    </button>
 
-      '<div class="grid2">' +
-        '<div class="kpi"><b>' + done + ' / ' + total + '</b><small>Módulos completados</small></div>' +
-        '<div class="kpi"><b>' + (done > 0 ? '🌱 En camino' : '✨ Empieza hoy') + '</b><small>Tu progreso personal</small></div>' +
-      '</div>' +
+    <div style="width: 100%; height: 240px; border-radius: 20px; overflow: hidden; margin-bottom: 1.5rem; background: #E8EBE9;">
+      <img src="images/module-${modNum}.jpg" alt="${mod.title}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.style.display='none'">
+    </div>
 
-      '<p class="section-title">Continúa tu camino</p>' +
-      '<div class="list" id="homeModuleList"></div>';
+    <h1 style="font-family: 'Playfair Display', serif; font-size: 1.8rem; margin-bottom: 0.5rem; color: #2C3E37;">
+      ${mod.title}
+    </h1>
+    <p style="font-size: 1rem; color: #6B7C73; margin-bottom: 2rem; line-height: 1.6;">
+      ${mod.subtitle}
+    </p>
 
-    var list = document.getElementById('homeModuleList');
-    var modules = APP_DATA.modules.slice(0, 3);
-    modules.forEach(function (m, idx) {
-      var isDone = state[m.id] && state[m.id].done;
-      var el = document.createElement('div');
-      el.className = 'item';
-      el.innerHTML =
-        '<div class="itemThumb" style="background: ' + getGradient(idx) + '"></div>' +
-        '<div class="itemInfo">' +
-          '<div class="itemTitle">' + m.title + '</div>' +
-          '<div class="itemSub">' + m.subtitle + '</div>' +
-        '</div>' +
-        '<span class="badge' + (isDone ? ' done' : '') + '">' + (isDone ? '✓ Hecho' : 'Ver') + '</span>';
-      el.addEventListener('click', function () { openModule(m, idx); });
-      list.appendChild(el);
-    });
-  }
+    <div class="card" style="background: #F4F6F5; border: none;">
+      <h3 style="font-size: 0.9rem; font-weight: 600; color: #7D9D85; margin-bottom: 0.5rem;">QUÉ VAS A LOGRAR</h3>
+      <p style="color: #2C3E37; line-height: 1.6;">${mod.goal}</p>
+    </div>
 
-  // ── MÓDULOS ─────────────────────────────────────────────
-  function renderModules() {
-    screen.innerHTML = '<p class="section-title">Tus 7 módulos</p><div class="list" id="moduleList"></div>';
-    var list = document.getElementById('moduleList');
-    APP_DATA.modules.forEach(function (m, idx) {
-      var isDone = state[m.id] && state[m.id].done;
-      var el = document.createElement('div');
-      el.className = 'item';
-      el.innerHTML =
-        '<div class="itemThumb" style="background: ' + getGradient(idx) + '"></div>' +
-        '<div class="itemInfo">' +
-          '<div class="itemTitle">' + m.title + '</div>' +
-          '<div class="itemSub">' + m.subtitle + '</div>' +
-        '</div>' +
-        '<span class="badge' + (isDone ? ' done' : '') + '">' + (isDone ? '✓' : '→') + '</span>';
-      el.addEventListener('click', function () { openModule(m, idx); });
-      list.appendChild(el);
-    });
-  }
+    <div class="card" style="background: #F4F6F5; border: none;">
+      <h3 style="font-size: 0.9rem; font-weight: 600; color: #7D9D85; margin-bottom: 0.5rem;">PRÁCTICA PRINCIPAL</h3>
+      <p style="color: #2C3E37; line-height: 1.6;">${mod.practice}</p>
+    </div>
 
-  // ── DETALLE MÓDULO ──────────────────────────────────────
-  function openModule(m, idx) {
-    var isDone = state[m.id] && state[m.id].done;
-    screen.innerHTML =
-      '<div class="moduleHero" style="background: ' + getGradient(idx) + '"></div>' +
-      '<div class="card"><div class="card-body">' +
-        '<h2 class="h2">' + m.title + '</h2>' +
-        '<p class="p">' + m.subtitle + '</p>' +
-      '</div></div>' +
+    <div class="card" style="background: #F4F6F5; border: none;">
+      <h3 style="font-size: 0.9rem; font-weight: 600; color: #7D9D85; margin-bottom: 0.5rem;">QUÉ ESPERAR</h3>
+      <p style="color: #2C3E37; line-height: 1.6;">${mod.expect}</p>
+    </div>
 
-      '<div class="moduleInfo">' +
-        '<p class="h3">🎯 Objetivo</p>' +
-        '<p class="p">' + m.goal + '</p>' +
-      '</div>' +
-      '<div class="moduleInfo">' +
-        '<p class="h3">🌿 Práctica</p>' +
-        '<p class="p">' + m.practice + '</p>' +
-      '</div>' +
-      '<div class="moduleInfo">' +
-        '<p class="h3">💛 Qué esperar</p>' +
-        '<p class="p">' + m.expect + '</p>' +
-      '</div>' +
+    <div class="audio-box" style="background: linear-gradient(135deg, #7D9D85 0%, #C17B6F 100%); padding: 1.5rem; border-radius: 16px; margin-top: 2rem;">
+      <div style="color: white; font-size: 0.85rem; margin-bottom: 0.5rem; opacity: 0.9;">AUDIO PRINCIPAL</div>
+      <audio controls style="width: 100%; margin-top: 0.5rem;">
+        <source src="${mod.audio}" type="audio/mpeg">
+      </audio>
+    </div>
 
-      '<div class="audioBox">' +
-        '<div class="audioLabel">🎧 Sesión principal</div>' +
-        '<audio controls preload="none" src="' + m.audio + '"></audio>' +
-      '</div>' +
-      '<div class="audioBox">' +
-        '<div class="audioLabel">🌱 Práctica diaria</div>' +
-        '<audio controls preload="none" src="' + m.daily + '"></audio>' +
-      '</div>' +
+    ${mod.daily ? `
+      <div class="audio-box" style="background: linear-gradient(135deg, #A8BFA8 0%, #D4A89A 100%); padding: 1.5rem; border-radius: 16px; margin-top: 1rem;">
+        <div style="color: white; font-size: 0.85rem; margin-bottom: 0.5rem; opacity: 0.9;">PRÁCTICA DIARIA</div>
+        <audio controls style="width: 100%; margin-top: 0.5rem;">
+          <source src="${mod.daily}" type="audio/mpeg">
+        </audio>
+      </div>
+    ` : ''}
+  `;
+}
 
-      '<div class="row mt">' +
-        '<button class="btn ghost" id="btnBack">← Volver</button>' +
-        '<button class="btn' + (isDone ? ' accent' : '') + '" id="btnDone">' +
-          (isDone ? '✓ Completado' : 'Marcar como hecho') +
-        '</button>' +
-      '</div>';
+function closeModule() {
+  state.currentModule = null;
+  render();
+}
 
-    document.getElementById('btnBack').addEventListener('click', function () {
-      render(currentTab);
-    });
-    document.getElementById('btnDone').addEventListener('click', function () {
-      if (!state[m.id]) state[m.id] = {};
-      state[m.id].done = !state[m.id].done;
-      save();
-      openModule(m, idx);
-    });
-  }
+// AUDIOS
+function renderAudios() {
+  screen.innerHTML = `
+    <h1 style="font-family: 'Playfair Display', serif; font-size: 1.8rem; margin-bottom: 1.5rem; color: #2C3E37;">
+      Sesiones guiadas
+    </h1>
+    <div class="list">
+      ${APP_DATA.audios.map(audio => `
+        <div class="card" style="display: flex; gap: 1rem; align-items: center;">
+          <div style="width: 80px; height: 80px; border-radius: 12px; background: linear-gradient(135deg, #7D9D85 0%, #C17B6F 100%); flex-shrink: 0; display: flex; align-items: center; justify-content: center;">
+            <span style="color: white; font-size: 1.5rem;">▶</span>
+          </div>
+          <div style="flex: 1;">
+            <div style="font-size: 0.75rem; font-weight: 600; color: #7D9D85; margin-bottom: 0.25rem;">${audio.category}</div>
+            <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 0.25rem; color: #2C3E37;">${audio.title}</h3>
+            <p style="font-size: 0.85rem; color: #6B7C73;">${audio.duration}</p>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
 
-  // ── AUDIOS ──────────────────────────────────────────────
-  function renderAudios() {
-    screen.innerHTML = '<p class="section-title">Sesiones de calma</p><div class="list" id="audioList"></div>';
-    var list = document.getElementById('audioList');
-    APP_DATA.audios.forEach(function (a, idx) {
-      var el = document.createElement('div');
-      el.className = 'item';
-      el.innerHTML =
-        '<div class="itemThumb" style="background: ' + getGradient(idx) + '"></div>' +
-        '<div class="itemInfo">' +
-          '<div class="audioCategory">' + a.category + '</div>' +
-          '<div class="itemTitle">' + a.title + '</div>' +
-          '<div class="itemSub">⏱ ' + a.duration + '</div>' +
-        '</div>' +
-        '<span class="badge">▶</span>';
-      el.addEventListener('click', function () { openAudio(a, idx); });
-      list.appendChild(el);
-    });
-  }
+// PROGRESS
+function renderProgress() {
+  const completed = Object.keys(state.progress).length;
+  const total = APP_DATA.modules.length;
+  const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
 
-  // ── REPRODUCTOR AUDIO ────────────────────────────────────
-  function openAudio(a, idx) {
-    screen.innerHTML =
-      '<div class="moduleHero" style="background: ' + getGradient(idx) + '"></div>' +
-      '<div class="card"><div class="card-body">' +
-        '<div class="audioCategory">' + a.category + '</div>' +
-        '<h2 class="h2">' + a.title + '</h2>' +
-        '<p class="p">⏱ Duración: ' + a.duration + '</p>' +
-      '</div></div>' +
-      '<div class="audioBox">' +
-        '<div class="audioLabel">🎧 Reproduciendo</div>' +
-        '<audio controls autoplay preload="auto" src="' + a.file + '"></audio>' +
-      '</div>' +
-      '<div class="row mt">' +
-        '<button class="btn ghost" id="btnBackAudio">← Volver</button>' +
-      '</div>';
+  screen.innerHTML = `
+    <h1 style="font-family: 'Playfair Display', serif; font-size: 1.8rem; margin-bottom: 1.5rem; color: #2C3E37;">
+      Tu progreso
+    </h1>
+    
+    <div class="card" style="text-align: center; padding: 2rem;">
+      <div style="font-size: 3rem; font-weight: 700; color: #7D9D85; margin-bottom: 0.5rem;">${percent}%</div>
+      <p style="color: #6B7C73; font-size: 1rem;">completado</p>
+      <div style="width: 100%; height: 8px; background: #E8EBE9; border-radius: 10px; margin-top: 1.5rem; overflow: hidden;">
+        <div style="width: ${percent}%; height: 100%; background: linear-gradient(90deg, #7D9D85 0%, #C17B6F 100%); transition: width 0.3s;"></div>
+      </div>
+    </div>
 
-    document.getElementById('btnBackAudio').addEventListener('click', function () {
-      render('audio');
-    });
-  }
+    <p style="color: #6B7C73; text-align: center; margin-top: 2rem; line-height: 1.6;">
+      Has completado ${completed} de ${total} módulos.<br>
+      Cada paso cuenta. Sigue adelante.
+    </p>
+  `;
+}
 
-  // ── PROGRESO ────────────────────────────────────────────
-  function renderProgress() {
-    var total = APP_DATA.modules.length;
-    var done  = APP_DATA.modules.filter(function (m) { return state[m.id] && state[m.id].done; }).length;
-    var pct   = Math.round((done / total) * 100);
-
-    screen.innerHTML =
-      '<p class="section-title">Mi Viaje</p>' +
-      '<div class="card"><div class="card-body">' +
-        '<p class="h3">Tu progreso general</p>' +
-        '<p class="p">' + done + ' de ' + total + ' módulos completados</p>' +
-        '<div class="progressBar"><div class="progressFill" style="width:' + pct + '%"></div></div>' +
-        '<p class="p mt" style="text-align:center; font-size:22px; margin-top:12px">' +
-          (pct === 100 ? '🎉 ¡Lo has conseguido!' : pct >= 50 ? '🌱 Vas muy bien' : '✨ Cada paso cuenta') +
-        '</p>' +
-      '</div></div>' +
-
-      '<div class="list mt" id="progressList"></div>';
-
-    var list = document.getElementById('progressList');
-    APP_DATA.modules.forEach(function (m, idx) {
-      var isDone = state[m.id] && state[m.id].done;
-      var el = document.createElement('div');
-      el.className = 'item';
-      el.innerHTML =
-        '<div class="itemThumb" style="background: ' + getGradient(idx) + '"></div>' +
-        '<div class="itemInfo">' +
-          '<div class="itemTitle">' + m.title + '</div>' +
-          '<div class="itemSub">' + m.subtitle + '</div>' +
-        '</div>' +
-        '<span class="badge' + (isDone ? ' done' : '') + '">' + (isDone ? '✓' : '○') + '</span>';
-      list.appendChild(el);
-    });
-  }
-
-  // ── Arranque ─────────────────────────────────────────────
-  render('home');
-
-})();
+// Init
+render();
