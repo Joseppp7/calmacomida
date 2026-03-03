@@ -1,4 +1,4 @@
-// ===== CALMACOMIDA · APP v700 =====
+// ===== CALMACOMIDA · APP v702 (con gradientes) =====
 (function () {
   'use strict';
 
@@ -40,6 +40,21 @@
     }
   });
 
+  // ── Gradientes por módulo ───────────────────────────────
+  var gradients = [
+    'linear-gradient(135deg, #7D9D85 0%, #A8C5B0 100%)',
+    'linear-gradient(135deg, #D4A373 0%, #E8C9A0 100%)',
+    'linear-gradient(135deg, #2C3E3A 0%, #5A6F68 100%)',
+    'linear-gradient(135deg, #A8C5B0 0%, #7D9D85 100%)',
+    'linear-gradient(135deg, #E8C9A0 0%, #D4A373 100%)',
+    'linear-gradient(135deg, #7D9D85 0%, #D4A373 100%)',
+    'linear-gradient(135deg, #5A6F68 0%, #7D9D85 100%)'
+  ];
+
+  function getGradient(index) {
+    return gradients[index % gradients.length];
+  }
+
   // ── Render principal ────────────────────────────────────
   function render(tab) {
     screen.innerHTML = '';
@@ -56,7 +71,6 @@
 
     screen.innerHTML =
       '<div class="hero">' +
-        '<img class="heroImg" src="https://images.unsplash.com/photo-1544787210-2827443cb39b?auto=format&fit=crop&w=800&q=80" alt="Calma">' +
         '<div class="heroContent">' +
           '<h2 class="heroTitle">Recupera la paz<br>con la comida</h2>' +
           '<p class="heroText">Sin dietas. Sin culpa. Solo comprensión y herramientas reales para ti.</p>' +
@@ -73,18 +87,18 @@
 
     var list = document.getElementById('homeModuleList');
     var modules = APP_DATA.modules.slice(0, 3);
-    modules.forEach(function (m) {
+    modules.forEach(function (m, idx) {
       var isDone = state[m.id] && state[m.id].done;
       var el = document.createElement('div');
       el.className = 'item';
       el.innerHTML =
-        '<img class="itemThumb" src="' + m.image + '" alt="' + m.title + '">' +
+        '<div class="itemThumb" style="background: ' + getGradient(idx) + '"></div>' +
         '<div class="itemInfo">' +
           '<div class="itemTitle">' + m.title + '</div>' +
           '<div class="itemSub">' + m.subtitle + '</div>' +
         '</div>' +
         '<span class="badge' + (isDone ? ' done' : '') + '">' + (isDone ? '✓ Hecho' : 'Ver') + '</span>';
-      el.addEventListener('click', function () { openModule(m); });
+      el.addEventListener('click', function () { openModule(m, idx); });
       list.appendChild(el);
     });
   }
@@ -93,27 +107,27 @@
   function renderModules() {
     screen.innerHTML = '<p class="section-title">Tus 7 módulos</p><div class="list" id="moduleList"></div>';
     var list = document.getElementById('moduleList');
-    APP_DATA.modules.forEach(function (m) {
+    APP_DATA.modules.forEach(function (m, idx) {
       var isDone = state[m.id] && state[m.id].done;
       var el = document.createElement('div');
       el.className = 'item';
       el.innerHTML =
-        '<img class="itemThumb" src="' + m.image + '" alt="' + m.title + '">' +
+        '<div class="itemThumb" style="background: ' + getGradient(idx) + '"></div>' +
         '<div class="itemInfo">' +
           '<div class="itemTitle">' + m.title + '</div>' +
           '<div class="itemSub">' + m.subtitle + '</div>' +
         '</div>' +
         '<span class="badge' + (isDone ? ' done' : '') + '">' + (isDone ? '✓' : '→') + '</span>';
-      el.addEventListener('click', function () { openModule(m); });
+      el.addEventListener('click', function () { openModule(m, idx); });
       list.appendChild(el);
     });
   }
 
   // ── DETALLE MÓDULO ──────────────────────────────────────
-  function openModule(m) {
+  function openModule(m, idx) {
     var isDone = state[m.id] && state[m.id].done;
     screen.innerHTML =
-      '<img class="moduleHero" src="' + m.image + '" alt="' + m.title + '">' +
+      '<div class="moduleHero" style="background: ' + getGradient(idx) + '"></div>' +
       '<div class="card"><div class="card-body">' +
         '<h2 class="h2">' + m.title + '</h2>' +
         '<p class="p">' + m.subtitle + '</p>' +
@@ -155,7 +169,7 @@
       if (!state[m.id]) state[m.id] = {};
       state[m.id].done = !state[m.id].done;
       save();
-      openModule(m);
+      openModule(m, idx);
     });
   }
 
@@ -163,26 +177,26 @@
   function renderAudios() {
     screen.innerHTML = '<p class="section-title">Sesiones de calma</p><div class="list" id="audioList"></div>';
     var list = document.getElementById('audioList');
-    APP_DATA.audios.forEach(function (a) {
+    APP_DATA.audios.forEach(function (a, idx) {
       var el = document.createElement('div');
       el.className = 'item';
       el.innerHTML =
-        '<img class="itemThumb" src="' + a.image + '" alt="' + a.title + '">' +
+        '<div class="itemThumb" style="background: ' + getGradient(idx) + '"></div>' +
         '<div class="itemInfo">' +
           '<div class="audioCategory">' + a.category + '</div>' +
           '<div class="itemTitle">' + a.title + '</div>' +
           '<div class="itemSub">⏱ ' + a.duration + '</div>' +
         '</div>' +
         '<span class="badge">▶</span>';
-      el.addEventListener('click', function () { openAudio(a); });
+      el.addEventListener('click', function () { openAudio(a, idx); });
       list.appendChild(el);
     });
   }
 
   // ── REPRODUCTOR AUDIO ────────────────────────────────────
-  function openAudio(a) {
+  function openAudio(a, idx) {
     screen.innerHTML =
-      '<img class="moduleHero" src="' + a.image + '" alt="' + a.title + '">' +
+      '<div class="moduleHero" style="background: ' + getGradient(idx) + '"></div>' +
       '<div class="card"><div class="card-body">' +
         '<div class="audioCategory">' + a.category + '</div>' +
         '<h2 class="h2">' + a.title + '</h2>' +
@@ -221,12 +235,12 @@
       '<div class="list mt" id="progressList"></div>';
 
     var list = document.getElementById('progressList');
-    APP_DATA.modules.forEach(function (m) {
+    APP_DATA.modules.forEach(function (m, idx) {
       var isDone = state[m.id] && state[m.id].done;
       var el = document.createElement('div');
       el.className = 'item';
       el.innerHTML =
-        '<img class="itemThumb" src="' + m.image + '" alt="' + m.title + '">' +
+        '<div class="itemThumb" style="background: ' + getGradient(idx) + '"></div>' +
         '<div class="itemInfo">' +
           '<div class="itemTitle">' + m.title + '</div>' +
           '<div class="itemSub">' + m.subtitle + '</div>' +

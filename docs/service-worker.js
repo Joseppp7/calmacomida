@@ -1,5 +1,5 @@
 // CalmaComida Service Worker FINAL FIX
-const CACHE_NAME = 'calmacomida-v10';
+const CACHE_NAME = 'calmacomida-v2';
 // Solo archivos realmente estáticos
 const STATIC_ASSETS = [
   "./",
