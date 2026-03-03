@@ -1,329 +1,242 @@
-/* CalmaComida app.js — PRIME (estable + acabado visual) */
+// ===== CALMACOMIDA · APP v700 =====
 (function () {
-  var screen = document.getElementById("screen");
-  var btnReset = document.getElementById("btnReset");
+  'use strict';
 
-  var STORAGE_KEY = "calmacomida_state_v4_prime";
-  var state = { done: {}, lastTab: "home" };
+  // ── Estado ──────────────────────────────────────────────
+  var STORAGE_KEY = 'calmacomida_v3';
+  var state = load();
 
-  function loadState() {
-    try {
-      var s = localStorage.getItem(STORAGE_KEY);
-      if (s) state = JSON.parse(s);
-    } catch (e) {}
+  function load() {
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; }
+    catch (e) { return {}; }
   }
-  function saveState() {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
-  }
-
-  function esc(s) {
-    return String(s || "")
-      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+  function save() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+    catch (e) {}
   }
 
-  function stats() {
-    var mods = (window.APP_DATA && window.APP_DATA.modules) ? window.APP_DATA.modules : [];
-    var total = mods.length;
-    var done = 0;
-    for (var k in (state.done || {})) if (state.done[k]) done++;
-    var pct = total ? Math.round((done / total) * 100) : 0;
-    return { total: total, done: done, pct: pct };
-  }
+  // ── Referencias DOM ─────────────────────────────────────
+  var screen   = document.getElementById('screen');
+  var tabs     = document.querySelectorAll('.tab');
+  var btnReset = document.getElementById('btnReset');
 
-  function setActiveTab(tab) {
-    state.lastTab = tab;
-    saveState();
+  // ── Navegación ──────────────────────────────────────────
+  var currentTab = 'home';
 
-    var tabs = document.querySelectorAll(".tab");
-    for (var i = 0; i < tabs.length; i++) {
-      tabs[i].classList.toggle("active", tabs[i].getAttribute("data-tab") === tab);
+  tabs.forEach(function (tab) {
+    tab.addEventListener('click', function () {
+      tabs.forEach(function (t) { t.classList.remove('active'); });
+      tab.classList.add('active');
+      currentTab = tab.dataset.tab;
+      render(currentTab);
+    });
+  });
+
+  btnReset.addEventListener('click', function () {
+    if (confirm('¿Reiniciar todo el progreso?')) {
+      state = {};
+      save();
+      render(currentTab);
     }
-    render(tab);
-    window.scrollTo(0, 0);
-  }
+  });
 
-  function findAudio(id) {
-    var list = (window.APP_DATA && window.APP_DATA.audios) ? window.APP_DATA.audios : [];
-    for (var i = 0; i < list.length; i++) if (list[i].id === id) return list[i];
-    return null;
-  }
-
+  // ── Render principal ────────────────────────────────────
   function render(tab) {
-    if (!window.APP_DATA) {
-      screen.innerHTML =
-        '<div class="card"><h2 class="h2" style="color:#b00020">Error</h2>' +
-        '<p class="p">No se cargó <b>data.js</b> (APP_DATA no existe).</p></div>';
-      return;
-    }
-    if (tab === "home") renderHome();
-    else if (tab === "modules") renderModules();
-    else if (tab === "audio") renderAudios();
-    else if (tab === "progress") renderProgress();
-    else renderHome();
+    screen.innerHTML = '';
+    if (tab === 'home')     renderHome();
+    if (tab === 'modules')  renderModules();
+    if (tab === 'audio')    renderAudios();
+    if (tab === 'progress') renderProgress();
   }
 
+  // ── INICIO ──────────────────────────────────────────────
   function renderHome() {
-    var s = stats();
-    var intro = findAudio("intro");
-    var cierre = findAudio("cierre");
-
-    var heroImg = "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=1600&q=70";
+    var done = Object.keys(state).filter(function (k) { return state[k] && state[k].done; }).length;
+    var total = APP_DATA.modules.length;
 
     screen.innerHTML =
-      '<section class="hero">' +
-        '<img class="heroImg" src="' + heroImg + '" alt="" />' +
+      '<div class="hero">' +
+        '<img class="heroImg" src="https://images.unsplash.com/photo-1544787210-2827443cb39b?auto=format&fit=crop&w=800&q=80" alt="Calma">' +
         '<div class="heroContent">' +
-          '<h2 class="heroTitle">Calma, claridad y elección</h2>' +
-          '<p class="heroText">Usa la Introducción una vez, y luego cada módulo con su práctica diaria. No es fuerza de voluntad: es reentrenar tu sistema nervioso.</p>' +
+          '<h2 class="heroTitle">Recupera la paz<br>con la comida</h2>' +
+          '<p class="heroText">Sin dietas. Sin culpa. Solo comprensión y herramientas reales para ti.</p>' +
         '</div>' +
-      '</section>' +
+      '</div>' +
 
-      '<section class="card" style="margin-top:16px">' +
-        '<h2 class="h2">Empieza por aquí</h2>' +
-        '<p class="p">1) Escucha la Introducción. 2) Haz los módulos. 3) Repite prácticas diarias cuando lo necesites.</p>' +
+      '<div class="grid2">' +
+        '<div class="kpi"><b>' + done + ' / ' + total + '</b><small>Módulos completados</small></div>' +
+        '<div class="kpi"><b>' + (done > 0 ? '🌱 En camino' : '✨ Empieza hoy') + '</b><small>Tu progreso personal</small></div>' +
+      '</div>' +
 
-        '<div class="list">' +
-          itemPlay(intro, "Introducción (una vez)") +
-          itemNav("Ir a Módulos", "Tus 7 módulos con 2 audios cada uno", "modules") +
-          itemNav("Ir a Audios", "Introducción, prácticas y cierre", "audio") +
-          itemPlay(cierre, "Cierre y mantenimiento") +
+      '<p class="section-title">Continúa tu camino</p>' +
+      '<div class="list" id="homeModuleList"></div>';
+
+    var list = document.getElementById('homeModuleList');
+    var modules = APP_DATA.modules.slice(0, 3);
+    modules.forEach(function (m) {
+      var isDone = state[m.id] && state[m.id].done;
+      var el = document.createElement('div');
+      el.className = 'item';
+      el.innerHTML =
+        '<img class="itemThumb" src="' + m.image + '" alt="' + m.title + '">' +
+        '<div class="itemInfo">' +
+          '<div class="itemTitle">' + m.title + '</div>' +
+          '<div class="itemSub">' + m.subtitle + '</div>' +
         '</div>' +
-
-        '<div style="margin-top:14px">' +
-          '<div class="progress-container"><div class="progress-bar" style="width:' + s.pct + '%"></div></div>' +
-          '<p class="p" style="margin-top:10px"><b>Progreso:</b> ' + s.done + '/' + s.total + ' módulos (' + s.pct + '%)</p>' +
-        '</div>' +
-
-        '<audio id="globalPlayer" controls preload="metadata"></audio>' +
-      '</section>';
-
-    window.__playGlobal = function (file) {
-      if (!file) return;
-      var p = document.getElementById("globalPlayer");
-      if (!p) return;
-      p.src = file;
-      p.play && p.play();
-      p.scrollIntoView({ behavior: "smooth", block: "start" });
-    };
-
-    window.__go = function (tab) { setActiveTab(tab); };
+        '<span class="badge' + (isDone ? ' done' : '') + '">' + (isDone ? '✓ Hecho' : 'Ver') + '</span>';
+      el.addEventListener('click', function () { openModule(m); });
+      list.appendChild(el);
+    });
   }
 
-  function itemPlay(a, hint) {
-    if (!a) return (
-      '<div class="item" style="opacity:.6; cursor:default">' +
-        '<div style="flex:1">' +
-          '<div class="itemTitle">' + esc(hint || "Audio") + '</div>' +
-          '<div class="itemSub">No encontrado en data.js</div>' +
-        '</div>' +
-        '<div class="badge">—</div>' +
-      '</div>'
-    );
-    return (
-      '<div class="item" onclick="window.__playGlobal(\'' + esc(a.file) + '\')">' +
-        '<div style="flex:1">' +
-          '<div class="itemTitle">' + esc(hint || a.title) + '</div>' +
-          '<div class="itemSub">' + esc(a.title) + '</div>' +
-        '</div>' +
-        '<div class="badge">▶ Reproducir</div>' +
-      '</div>'
-    );
-  }
-
-  function itemNav(title, sub, tab) {
-    return (
-      '<div class="item" onclick="window.__go(\'' + esc(tab) + '\')">' +
-        '<div style="flex:1">' +
-          '<div class="itemTitle">' + esc(title) + '</div>' +
-          '<div class="itemSub">' + esc(sub || "") + '</div>' +
-        '</div>' +
-        '<div class="badge">Abrir</div>' +
-      '</div>'
-    );
-  }
-
+  // ── MÓDULOS ─────────────────────────────────────────────
   function renderModules() {
-    var mods = window.APP_DATA.modules || [];
-    var html =
-      '<section class="card">' +
-        '<h2 class="h2">Módulos</h2>' +
-        '<p class="p">Cada módulo tiene <b>audio principal</b> + <b>práctica diaria</b>.</p>' +
-        '<div class="list">';
-
-    for (var i = 0; i < mods.length; i++) {
-      var m = mods[i];
-      var done = !!(state.done && state.done[m.id]);
-      html +=
-        '<div class="item" onclick="window.__openModule(\'' + esc(m.id) + '\')">' +
-          '<img class="audioThumb" src="' + esc(m.image || "") + '" onerror="this.style.display=\'none\'" alt="" />' +
-          '<div style="flex:1">' +
-            '<div class="itemTitle">' + esc(m.title) + '</div>' +
-            '<div class="itemSub">' + esc(m.goal || "") + '</div>' +
-          '</div>' +
-          '<div class="badge ' + (done ? "done" : "") + '">' + (done ? "Hecho" : "Pendiente") + '</div>' +
-        '</div>';
-    }
-
-    html += '</div></section>';
-    screen.innerHTML = html;
-
-    window.__openModule = function (id) {
-      for (var j = 0; j < mods.length; j++) if (mods[j].id === id) return openModule(mods[j]);
-    };
+    screen.innerHTML = '<p class="section-title">Tus 7 módulos</p><div class="list" id="moduleList"></div>';
+    var list = document.getElementById('moduleList');
+    APP_DATA.modules.forEach(function (m) {
+      var isDone = state[m.id] && state[m.id].done;
+      var el = document.createElement('div');
+      el.className = 'item';
+      el.innerHTML =
+        '<img class="itemThumb" src="' + m.image + '" alt="' + m.title + '">' +
+        '<div class="itemInfo">' +
+          '<div class="itemTitle">' + m.title + '</div>' +
+          '<div class="itemSub">' + m.subtitle + '</div>' +
+        '</div>' +
+        '<span class="badge' + (isDone ? ' done' : '') + '">' + (isDone ? '✓' : '→') + '</span>';
+      el.addEventListener('click', function () { openModule(m); });
+      list.appendChild(el);
+    });
   }
 
+  // ── DETALLE MÓDULO ──────────────────────────────────────
   function openModule(m) {
-    var done = !!(state.done && state.done[m.id]);
-
+    var isDone = state[m.id] && state[m.id].done;
     screen.innerHTML =
-      '<section class="card">' +
-        '<button class="chip" onclick="window.__backMods()">← Volver</button>' +
+      '<img class="moduleHero" src="' + m.image + '" alt="' + m.title + '">' +
+      '<div class="card"><div class="card-body">' +
+        '<h2 class="h2">' + m.title + '</h2>' +
+        '<p class="p">' + m.subtitle + '</p>' +
+      '</div></div>' +
 
-        '<div style="margin-top:12px">' +
-          '<img src="' + esc(m.image || "") + '" onerror="this.style.display=\'none\'" style="width:100%;height:190px;object-fit:cover;border-radius:16px;border:1px solid rgba(0,0,0,.06)" alt="" />' +
-        '</div>' +
+      '<div class="moduleInfo">' +
+        '<p class="h3">🎯 Objetivo</p>' +
+        '<p class="p">' + m.goal + '</p>' +
+      '</div>' +
+      '<div class="moduleInfo">' +
+        '<p class="h3">🌿 Práctica</p>' +
+        '<p class="p">' + m.practice + '</p>' +
+      '</div>' +
+      '<div class="moduleInfo">' +
+        '<p class="h3">💛 Qué esperar</p>' +
+        '<p class="p">' + m.expect + '</p>' +
+      '</div>' +
 
-        '<h2 class="h2" style="margin-top:14px">' + esc(m.title) + '</h2>' +
+      '<div class="audioBox">' +
+        '<div class="audioLabel">🎧 Sesión principal</div>' +
+        '<audio controls preload="none" src="' + m.audio + '"></audio>' +
+      '</div>' +
+      '<div class="audioBox">' +
+        '<div class="audioLabel">🌱 Práctica diaria</div>' +
+        '<audio controls preload="none" src="' + m.daily + '"></audio>' +
+      '</div>' +
 
-        (m.goal ? '<p class="p"><b>Objetivo:</b> ' + esc(m.goal) + '</p>' : '') +
-        (m.practice ? '<p class="p" style="margin-top:10px"><b>Cómo practicar:</b> ' + esc(m.practice) + '</p>' : '') +
-        (m.expect ? '<p class="p" style="margin-top:10px"><b>Qué esperar:</b> ' + esc(m.expect) + '</p>' : '') +
-
-        '<div class="card" style="margin-top:14px; background:var(--soft)">' +
-          '<div class="itemTitle">🎧 Audio principal</div>' +
-          '<audio controls preload="metadata" src="' + esc(m.audio || "") + '"></audio>' +
-        '</div>' +
-
-        '<div class="card" style="margin-top:12px; background:var(--soft)">' +
-          '<div class="itemTitle">🧘 Práctica diaria</div>' +
-          '<div class="itemSub">Úsala 1 vez al día (o antes de una comida) durante la semana.</div>' +
-          '<audio controls preload="metadata" src="' + esc(m.daily || "") + '"></audio>' +
-        '</div>' +
-
-        '<button class="btn" id="btnDone" style="margin-top:14px">' +
-          (done ? "✅ Módulo completado (toca para desmarcar)" : "Marcar módulo como hecho") +
+      '<div class="row mt">' +
+        '<button class="btn ghost" id="btnBack">← Volver</button>' +
+        '<button class="btn' + (isDone ? ' accent' : '') + '" id="btnDone">' +
+          (isDone ? '✓ Completado' : 'Marcar como hecho') +
         '</button>' +
-      '</section>';
+      '</div>';
 
-    window.__backMods = function(){ setActiveTab("modules"); };
-
-    var b = document.getElementById("btnDone");
-    b.onclick = function () {
-      state.done = state.done || {};
-      state.done[m.id] = !state.done[m.id];
-      saveState();
+    document.getElementById('btnBack').addEventListener('click', function () {
+      render(currentTab);
+    });
+    document.getElementById('btnDone').addEventListener('click', function () {
+      if (!state[m.id]) state[m.id] = {};
+      state[m.id].done = !state[m.id].done;
+      save();
       openModule(m);
-    };
+    });
   }
 
- function renderAudios() {
-    var sos = window.APP_DATA.ayudaSOS || [];
-    var otros = window.APP_DATA.audios || [];
-    
-    var html = '<section class="card">' +
-               '<h2 class="h2">🆘 Ayuda Rápida</h2>' +
-               '<p class="p">Elige lo que sientes ahora mismo para recibir ayuda inmediata.</p>' +
-               '<div class="list">';
-
-    // 1. Botones SOS con Imagen y Texto
-    for (var i = 0; i < sos.length; i++) {
-      var s = sos[i];
-      html +=
-        '<div class="item" style="padding:0; overflow:hidden; flex-direction:column; align-items:stretch" onclick="window.__playSOS(\'' + esc(s.file) + '\', \'' + esc(s.title) + '\')">' +
-          '<img src="' + esc(s.image) + '" style="width:100%; height:100px; object-fit:cover; border-radius:0" />' +
-          '<div style="padding:14px">' +
-            '<div class="itemTitle">' + esc(s.title) + '</div>' +
-            '<div class="itemSub" style="margin-top:4px">' + esc(s.desc) + '</div>' +
-          '</div>' +
-        '</div>';
-    }
-
-    html += '</div></section>';
-
-    // 2. Lista de otros audios (Intro, Cierre, etc.)
-    html += '<section class="card" style="margin-top:16px">' +
-            '<h2 class="h2">🎧 Todos los Audios</h2>' +
-            '<div class="list">';
-    
-    for (var j = 0; j < otros.length; j++) {
-      var a = otros[j];
-      html +=
-        '<div class="item" onclick="window.__playSOS(\'' + esc(a.file) + '\', \'' + esc(a.title) + '\')">' +
-          '<div style="flex:1">' +
-            '<div class="itemTitle">' + esc(a.title) + '</div>' +
-            '<div class="itemSub">Toca para escuchar</div>' +
-          '</div>' +
-          '<div class="badge">▶</div>' +
-        '</div>';
-    }
-
-    html += '</div>' +
-            '<div id="sosPlayerBox" style="display:none; margin-top:20px; padding:16px; background:var(--soft); border-radius:16px; border:1px solid var(--accent)">' +
-              '<div id="sosTitle" style="font-weight:900; color:var(--brand); margin-bottom:10px"></div>' +
-              '<audio id="sosAudio" controls style="width:100%"></audio>' +
-            '</div>' +
-            '</section>';
-
-    screen.innerHTML = html;
-
-    window.__playSOS = function(file, title) {
-      var box = document.getElementById("sosPlayerBox");
-      var t = document.getElementById("sosTitle");
-      var p = document.getElementById("sosAudio");
-      t.textContent = "Reproduciendo: " + title;
-      box.style.display = "block";
-      p.src = file;
-      p.play();
-      box.scrollIntoView({ behavior: "smooth", block: "center" });
-    };
-  }
-
-  function renderProgress() {
-    var s = stats();
-    screen.innerHTML =
-      '<section class="card">' +
-        '<h2 class="h2">Tu transformación</h2>' +
-        '<p class="p">Pequeños pasos, repetidos. Eso cambia el patrón.</p>' +
-        '<div style="margin-top:14px">' +
-          '<div class="progress-container"><div class="progress-bar" style="width:' + s.pct + '%"></div></div>' +
-          '<p class="p" style="margin-top:10px"><b>' + s.done + '/' + s.total + '</b> módulos (' + s.pct + '%)</p>' +
+  // ── AUDIOS ──────────────────────────────────────────────
+  function renderAudios() {
+    screen.innerHTML = '<p class="section-title">Sesiones de calma</p><div class="list" id="audioList"></div>';
+    var list = document.getElementById('audioList');
+    APP_DATA.audios.forEach(function (a) {
+      var el = document.createElement('div');
+      el.className = 'item';
+      el.innerHTML =
+        '<img class="itemThumb" src="' + a.image + '" alt="' + a.title + '">' +
+        '<div class="itemInfo">' +
+          '<div class="audioCategory">' + a.category + '</div>' +
+          '<div class="itemTitle">' + a.title + '</div>' +
+          '<div class="itemSub">⏱ ' + a.duration + '</div>' +
         '</div>' +
-      '</section>';
+        '<span class="badge">▶</span>';
+      el.addEventListener('click', function () { openAudio(a); });
+      list.appendChild(el);
+    });
   }
 
-  function wireReset() {
-    if (!btnReset) return;
-    btnReset.onclick = function () {
-      if (confirm("¿Reiniciar progreso?")) {
-        try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
-        state = { done: {}, lastTab: "home" };
-        setActiveTab("home");
-      }
-    };
+  // ── REPRODUCTOR AUDIO ────────────────────────────────────
+  function openAudio(a) {
+    screen.innerHTML =
+      '<img class="moduleHero" src="' + a.image + '" alt="' + a.title + '">' +
+      '<div class="card"><div class="card-body">' +
+        '<div class="audioCategory">' + a.category + '</div>' +
+        '<h2 class="h2">' + a.title + '</h2>' +
+        '<p class="p">⏱ Duración: ' + a.duration + '</p>' +
+      '</div></div>' +
+      '<div class="audioBox">' +
+        '<div class="audioLabel">🎧 Reproduciendo</div>' +
+        '<audio controls autoplay preload="auto" src="' + a.file + '"></audio>' +
+      '</div>' +
+      '<div class="row mt">' +
+        '<button class="btn ghost" id="btnBackAudio">← Volver</button>' +
+      '</div>';
+
+    document.getElementById('btnBackAudio').addEventListener('click', function () {
+      render('audio');
+    });
   }
 
-  function wireTabs() {
-    var tabs = document.querySelectorAll(".tab");
-    for (var i = 0; i < tabs.length; i++) {
-      (function (btn) {
-        btn.onclick = function () { setActiveTab(btn.getAttribute("data-tab")); };
-      })(tabs[i]);
-    }
+  // ── PROGRESO ────────────────────────────────────────────
+  function renderProgress() {
+    var total = APP_DATA.modules.length;
+    var done  = APP_DATA.modules.filter(function (m) { return state[m.id] && state[m.id].done; }).length;
+    var pct   = Math.round((done / total) * 100);
+
+    screen.innerHTML =
+      '<p class="section-title">Mi Viaje</p>' +
+      '<div class="card"><div class="card-body">' +
+        '<p class="h3">Tu progreso general</p>' +
+        '<p class="p">' + done + ' de ' + total + ' módulos completados</p>' +
+        '<div class="progressBar"><div class="progressFill" style="width:' + pct + '%"></div></div>' +
+        '<p class="p mt" style="text-align:center; font-size:22px; margin-top:12px">' +
+          (pct === 100 ? '🎉 ¡Lo has conseguido!' : pct >= 50 ? '🌱 Vas muy bien' : '✨ Cada paso cuenta') +
+        '</p>' +
+      '</div></div>' +
+
+      '<div class="list mt" id="progressList"></div>';
+
+    var list = document.getElementById('progressList');
+    APP_DATA.modules.forEach(function (m) {
+      var isDone = state[m.id] && state[m.id].done;
+      var el = document.createElement('div');
+      el.className = 'item';
+      el.innerHTML =
+        '<img class="itemThumb" src="' + m.image + '" alt="' + m.title + '">' +
+        '<div class="itemInfo">' +
+          '<div class="itemTitle">' + m.title + '</div>' +
+          '<div class="itemSub">' + m.subtitle + '</div>' +
+        '</div>' +
+        '<span class="badge' + (isDone ? ' done' : '') + '">' + (isDone ? '✓' : '○') + '</span>';
+      list.appendChild(el);
+    });
   }
 
-  function registerSW() {
-    try {
-      if ("serviceWorker" in navigator) {
-        navigator.serviceWorker.register("./service-worker.js");
-      }
-    } catch (e) {}
-  }
+  // ── Arranque ─────────────────────────────────────────────
+  render('home');
 
-  // Init
-  loadState();
-  wireReset();
-  wireTabs();
-  registerSW();
-  setActiveTab(state.lastTab || "home");
 })();
