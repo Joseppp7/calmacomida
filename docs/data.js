@@ -3,7 +3,40 @@ var AUDIO_CDN = "https://github.com/Joseppp7/calmacomida/releases/download/audio
 var AUDIO_QS = "?raw=1";
 
 window.APP_DATA = {
-  modules: [
+ 
+var AUDIO_CDN = "https://github.com/Joseppp7/calmacomida/releases/download/audio-v1/";
+var AUDIO_QS = "?raw=1";
+
+window.APP_DATA = {
+  // ESTO ES LO QUE RECUPERA LA SECCIÓN AYUDA
+  audioStates: [
+    {
+      id: "impulso",
+      title: "Tengo un impulso ahora",
+      desc: "Para 2 minutos antes de decidir. Este audio te ayuda a recuperar el control.",
+      image: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&w=400&q=60",
+      file: AUDIO_CDN + "module-3-daily.mp3" + AUDIO_QS
+    },
+    {
+      id: "ansiedad",
+      title: "Siento ansiedad",
+      desc: "Vamos a bajar la activación del cuerpo antes de usar comida para calmarla.",
+      image: "https://images.unsplash.com/photo-1518241353330-0f7941c2d9b5?auto=format&fit=crop&w=400&q=60",
+      file: AUDIO_CDN + "module-5-daily.mp3" + AUDIO_QS
+    },
+    {
+      id: "culpa",
+      title: "Me siento culpable por haber comido",
+      desc: "La culpa alimenta el ciclo. Escucha esto para romperlo.",
+      image: "https://images.unsplash.com/photo-1499714608240-22fc6ad53fb2?auto=format&fit=crop&w=400&q=60",
+      file: AUDIO_CDN + "module-7-daily.mp3" + AUDIO_QS
+    }
+  ],
+
+  // ... aquí siguen tus módulos y audios normales ...
+  modules: [ /* tus 7 módulos */ ],
+  audios: [ /* tu lista de audios */ ]
+}; modules: [
     { 
       id: "m1", title: "Módulo 1: Calma al comenzar", 
       goal: "Bajar la velocidad mental y física al empezar a comer.", 
