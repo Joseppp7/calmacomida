@@ -16,12 +16,14 @@
     <header class="topbar">
       <div>
         <h1 id="appTitle">CalmaComida</h1>
-        <p class="subtitle" id="appSubtitle">Calma · Claridad · Elección</p>
+        <p class="subtitle" id="appSubtitle">Cargando...</p>
       </div>
-      <button class="chip" id="btnReset" title="Reset progreso">Reset</button>
+      <button class="chip" id="btnReset">Reset</button>
     </header>
 
-    <main class="screen" id="screen"></main>
+    <main class="screen" id="screen">
+      <div style="padding:20px; text-align:center;">Cargando tu sesión de calma...</div>
+    </main>
 
     <nav class="tabbar">
       <button class="tab active" data-tab="home">🏠 Inicio</button>
@@ -31,6 +33,15 @@
     </nav>
   </div>
 
-<script src="data.js?v=1005"></script>
-<script src="app.js?v=1005"></script></body>
+  <!-- CARGA EN ORDEN ESTRICTO -->
+  <script src="./data.js?v=3000"></script>
+  <script>
+    // Comprobación de seguridad inmediata
+    if (!window.APP_DATA) {
+      console.error("Fallo crítico: data.js no definió APP_DATA");
+      document.getElementById('screen').innerHTML = '<div style="color:red;padding:20px">Error de conexión con los datos. Por favor, recarga la página.</div>';
+    }
+  </script>
+  <script src="./app.js?v=2000"></script>
+</body>
 </html>
