@@ -1,103 +1,47 @@
-// ===== CALMACOMIDA · DATA v703 (con imágenes locales) =====
+window.APP_DATA = {
+  name: "CalmaComida",
+  subtitle: "Tu refugio para comer en paz",
+  buyUrl: "https://TU-WEB.com/comprar", // CAMBIA ESTO POR TU ENLACE
+  coverImage: "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&w=800&q=80",
 
-const AUDIO_CDN = 'https://drive.google.com/uc?export=download&id=';
-const AUDIO_QS = '';
+  // Testimonios para generar confianza inmediata
+  testimonials: [
+    { name: "Elena", text: "Por fin entiendo qué me pasa por las noches. Esta app es mi salvavidas." },
+    { name: "Carlos", text: "Los audios cortos antes de comer han cambiado mi digestión y mi ansiedad." }
+  ],
 
-const APP_DATA = {
   modules: [
-    {
-      id: 'mod1',
-      title: 'El poder sobre los impulsos',
-      subtitle: 'Recupera el control sin luchar contra ti misma',
-      image: './images/module-1.jpg',
-      audio: AUDIO_CDN + '1aBcDeFgHiJkLmNoPqRsTuVwXyZ' + AUDIO_QS,
-      daily: AUDIO_CDN + '1aBcDeFgHiJkLmNoPqRsTuVwXyZ' + AUDIO_QS,
-      goal: 'Aprender a reconocer y gestionar los impulsos de comer sin hambre física, recuperando tu capacidad de elección consciente.',
-      practice: 'Técnica de pausa de 90 segundos antes de comer. Respiración consciente para observar el impulso sin actuar automáticamente.',
-      expect: 'Sentirás que recuperas el control. Los impulsos seguirán apareciendo, pero ya no te arrastrarán. Empezarás a elegir en lugar de reaccionar.'
-    },
-    {
-      id: 'mod2',
-      title: 'Reconocer el hambre real',
-      subtitle: 'Distingue hambre física de hambre emocional',
-      image: './images/module-2.jpg',
-      audio: AUDIO_CDN + '2aBcDeFgHiJkLmNoPqRsTuVwXyZ' + AUDIO_QS,
-      daily: AUDIO_CDN + '2aBcDeFgHiJkLmNoPqRsTuVwXyZ' + AUDIO_QS,
-      goal: 'Desarrollar la capacidad de diferenciar entre hambre física y emocional, conectando con las señales reales de tu cuerpo.',
-      practice: 'Escaneo corporal antes de cada comida. Escala de hambre del 1 al 10. Registro de sensaciones físicas vs emocionales.',
-      expect: 'Empezarás a notar la diferencia entre "tengo hambre" y "necesito calmarme". Tu cuerpo volverá a ser tu aliado, no tu enemigo.'
-    },
-    {
-      id: 'mod3',
-      title: 'Calmar la ansiedad sin comer',
-      subtitle: 'Herramientas reales para gestionar emociones',
-      image: './images/module-3.jpg',
-      audio: AUDIO_CDN + '3aBcDeFgHiJkLmNoPqRsTuVwXyZ' + AUDIO_QS,
-      daily: AUDIO_CDN + '3aBcDeFgHiJkLmNoPqRsTuVwXyZ' + AUDIO_QS,
-      goal: 'Aprender técnicas efectivas para regular la ansiedad sin recurrir a la comida como única vía de escape.',
-      practice: 'Respiración 4-7-8. Técnica de anclaje sensorial. Movimiento consciente de 5 minutos. Lista de recursos alternativos.',
-      expect: 'Descubrirás que puedes calmarte sin comer. La ansiedad dejará de ser una amenaza y se convertirá en una señal que puedes gestionar.'
-    },
-    {
-      id: 'mod4',
-      title: 'Romper con la culpa',
-      subtitle: 'Libérate del ciclo de restricción y exceso',
-      image: './images/module-4.jpg',
-      audio: AUDIO_CDN + '4aBcDeFgHiJkLmNoPqRsTuVwXyZ' + AUDIO_QS,
-      daily: AUDIO_CDN + '4aBcDeFgHiJkLmNoPqRsTuVwXyZ' + AUDIO_QS,
-      goal: 'Desactivar el mecanismo de culpa que perpetúa el ciclo de restricción-atracón, cultivando la autocompasión.',
-      practice: 'Diálogo interno compasivo. Técnica de la "amiga sabia". Registro de pensamientos automáticos y reformulación.',
-      expect: 'La culpa perderá su poder sobre ti. Podrás comer sin castigarte después. El ciclo de restricción-exceso empezará a romperse.'
-    },
-    {
-      id: 'mod5',
-      title: 'Construir una relación sana',
-      subtitle: 'De la guerra a la paz con la comida',
-      image: './images/module-5.jpg',
-      audio: AUDIO_CDN + '5aBcDeFgHiJkLmNoPqRsTuVwXyZ' + AUDIO_QS,
-      daily: AUDIO_CDN + '5aBcDeFgHiJkLmNoPqRsTuVwXyZ' + AUDIO_QS,
-      goal: 'Transformar tu relación con la comida de una lucha constante a una experiencia de nutrición y placer equilibrados.',
-      practice: 'Comida consciente: comer sin distracciones. Práctica de gratitud hacia los alimentos. Permiso incondicional para comer.',
-      expect: 'Comer dejará de ser un campo de batalla. Podrás disfrutar de la comida sin miedo, culpa o descontrol. Sentirás paz.'
-    },
-    {
-      id: 'mod6',
-      title: 'Gestionar emociones difíciles',
-      subtitle: 'Siente sin necesidad de escapar',
-      image: './images/module-6.jpg',
-      audio: AUDIO_CDN + '6aBcDeFgHiJkLmNoPqRsTuVwXyZ' + AUDIO_QS,
-      daily: AUDIO_CDN + '6aBcDeFgHiJkLmNoPqRsTuVwXyZ' + AUDIO_QS,
-      goal: 'Desarrollar la capacidad de estar presente con emociones difíciles sin necesidad de evadirlas con comida.',
-      practice: 'Técnica RAIN (Reconocer, Aceptar, Investigar, Nutrir). Escritura emocional. Validación de emociones.',
-      expect: 'Las emociones difíciles dejarán de asustarte. Podrás sentir tristeza, soledad o frustración sin necesidad de "taparlas" comiendo.'
-    },
-    {
-      id: 'mod7',
-      title: 'Mantener el cambio',
-      subtitle: 'Integra lo aprendido en tu vida real',
-      image: './images/module-7.jpg',
-      audio: AUDIO_CDN + '7aBcDeFgHiJkLmNoPqRsTuVwXyZ' + AUDIO_QS,
-      daily: AUDIO_CDN + '7aBcDeFgHiJkLmNoPqRsTuVwXyZ' + AUDIO_QS,
-      goal: 'Consolidar los cambios y crear un plan sostenible para mantener tu nueva relación con la comida a largo plazo.',
-      practice: 'Plan de prevención de recaídas. Red de apoyo. Rituales de autocuidado. Revisión semanal de progreso.',
-      expect: 'Tendrás herramientas para toda la vida. Los momentos difíciles seguirán apareciendo, pero sabrás cómo gestionarlos sin volver atrás.'
-    }
+    { id: "module-1", title: "Día 1 · Calma al comenzar", desc: "Baja las revoluciones antes de la primera bocado.", phrase: "Comer con calma es un acto de amor propio.", goal: "Reducir la velocidad al comer.", expect: "Sentirte más ligero y presente.", image: "https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=500&q=60", audio: "audio/module-1.mp3", daily: "audio/module-1-daily.mp3" },
+    { id: "module-2", title: "Día 2 · Hambre emocional", desc: "¿Hambre real o hambre de afecto?", phrase: "Tu cuerpo sabe lo que necesita, escúchalo.", goal: "Identificar el hambre emocional.", expect: "Menos culpa tras las comidas.", image: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=500&q=60", audio: "audio/module-2.mp3", daily: "audio/module-2-daily.mp3" },
+    { id: "module-3", title: "Día 3 · Los impulsos", desc: "Ese momento donde pierdes el control tiene solución.", phrase: "Un impulso es una ola: déjala pasar.", goal: "Surfear las ganas de comer por ansiedad.", expect: "Mayor autocontrol sin esfuerzo.", image: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&w=500&q=60", audio: "audio/module-3.mp3", daily: "audio/module-3-daily.mp3" },
+    { id: "module-4", title: "Día 4 · La saciedad", desc: "Aprende a parar cuando tu cuerpo dice 'basta'.", phrase: "No necesitas terminar el plato, necesitas estar satisfecha.", goal: "Reconocer la señal de plenitud.", expect: "Digestiones mucho más fáciles.", image: "https://images.unsplash.com/photo-1494390248081-4e521a5940db?auto=format&fit=crop&w=500&q=60", audio: "audio/module-4.mp3", daily: "audio/module-4-daily.mp3" },
+    { id: "module-5", title: "Día 5 · Ansiedad", desc: "Herramientas para cuando el día te supera.", phrase: "La comida no calma la mente, la respiración sí.", goal: "Regular el sistema nervioso.", expect: "Paz mental duradera.", image: "https://images.unsplash.com/photo-1515377905703-c4788e51af15?auto=format&fit=crop&w=500&q=60", audio: "audio/module-5.mp3", daily: "audio/module-5-daily.mp3" },
+    { id: "module-6", title: "Día 6 · Nuevos hábitos", desc: "Pequeños cambios, resultados gigantes.", phrase: "La constancia amable vence a la perfección.", goal: "Crear rutinas sostenibles.", expect: "Un nuevo estilo de vida sin dietas.", image: "https://images.unsplash.com/photo-1498837167922-ddd27525d352?auto=format&fit=crop&w=500&q=60", audio: "audio/module-6.mp3", daily: "audio/module-6-daily.mp3" },
+    { id: "module-7", title: "Día 7 · Mantenimiento", desc: "Cómo seguir brillando a partir de ahora.", phrase: "Ya tienes las herramientas. Confía en ti.", goal: "Integrar lo aprendido.", expect: "Libertad total frente a la comida.", image: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&w=500&q=60", audio: "audio/module-7.mp3", daily: "audio/module-7-daily.mp3" }
+  ],
+
+  // Sección de ayuda rápida por estados (Lo que más valorarán tus clientes)
+  audioStates: [
+    { id: "s1", title: "Tengo un impulso ahora", desc: "Escúchalo antes de abrir la nevera.", file: "audio/module-3-daily.mp3", image: "https://images.unsplash.com/photo-1499209974431-9dddcece7f88?auto=format&fit=crop&w=150&q=60" },
+    { id: "s2", title: "Ansiedad nocturna", desc: "Para cerrar el día con paz.", file: "audio/module-5-daily.mp3", image: "https://images.unsplash.com/photo-1505489435671-80a165c62611?auto=format&fit=crop&w=150&q=60" },
+    { id: "s3", title: "Siento culpa", desc: "Para perdonarte y seguir adelante.", file: "audio/module-7-daily.mp3", image: "https://images.unsplash.com/photo-1516589174184-c685266d430c?auto=format&fit=crop&w=150&q=60" }
   ],
 
   audios: [
-    {
-      id: 'intro',
-      title: 'Bienvenida a tu proceso',
-      category: 'INICIO',
-      duration: '8 min',
-      file: AUDIO_CDN + 'intro-curso' + AUDIO_QS
-    },
-    {
-      id: 'cierre',
-      title: 'Cierre y mantenimiento',
-      category: 'CIERRE',
-      duration: '12 min',
-      file: AUDIO_CDN + 'cierre-mantenimiento' + AUDIO_QS
-    }
+    { id: "intro", title: "Bienvenida · Cómo usar CalmaComida", file: "audio/intro-curso.mp3" },
+    { id: "m1", title: "Módulo 1 · Sesión principal", file: "audio/module-1.mp3" },
+    { id: "m1d", title: "Módulo 1 · Práctica diaria", file: "audio/module-1-daily.mp3" },
+    { id: "m2", title: "Módulo 2 · Sesión principal", file: "audio/module-2.mp3" },
+    { id: "m2d", title: "Módulo 2 · Práctica diaria", file: "audio/module-2-daily.mp3" },
+    { id: "m3", title: "Módulo 3 · Sesión principal", file: "audio/module-3.mp3" },
+    { id: "m3d", title: "Módulo 3 · Práctica diaria", file: "audio/module-3-daily.mp3" },
+    { id: "m4", title: "Módulo 4 · Sesión principal", file: "audio/module-4.mp3" },
+    { id: "m4d", title: "Módulo 4 · Práctica diaria", file: "audio/module-4-daily.mp3" },
+    { id: "m5", title: "Módulo 5 · Sesión principal", file: "audio/module-5.mp3" },
+    { id: "m5d", title: "Módulo 5 · Práctica diaria", file: "audio/module-5-daily.mp3" },
+    { id: "m6", title: "Módulo 6 · Sesión principal", file: "audio/module-6.mp3" },
+    { id: "m6d", title: "Módulo 6 · Práctica diaria", file: "audio/module-6-daily.mp3" },
+    { id: "m7", title: "Módulo 7 · Sesión principal", file: "audio/module-7.mp3" },
+    { id: "m7d", title: "Módulo 7 · Práctica diaria", file: "audio/module-7-daily.mp3" }
   ]
 };
