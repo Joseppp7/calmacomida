@@ -1,189 +1,269 @@
-const $ = (sel) => document.querySelector(sel);
-const screen = $("#screen");
-const STORAGE_KEY = "calmacomida_vfinal";
+/* CalmaComida app.js — versión estable */
 
-let state = { done: {}, lastTab: "home" };
-try {
-  const saved = localStorage.getItem(STORAGE_KEY);
-  if (saved) state = JSON.parse(saved);
-} catch(e) {}
+(function () {
+  var screen = document.getElementById("screen");
+  var btnReset = document.getElementById("btnReset");
 
-function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+  var STORAGE_KEY = "calmacomida_state_v3";
+  var state = { done: {}, lastTab: "home" };
 
-function stats() {
-  const total = APP_DATA.modules.length;
-  const done  = Object.values(state.done).filter(Boolean).length;
-  const pct   = total ? Math.round((done / total) * 100) : 0;
-  return { total, done, pct };
-}
+  function loadState() {
+    try {
+      var s = localStorage.getItem(STORAGE_KEY);
+      if (s) state = JSON.parse(s);
+    } catch (e) {}
+  }
+  function saveState() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
+  }
 
-function setActiveTab(tab) {
-  state.lastTab = tab;
-  saveState();
-  document.querySelectorAll(".tab").forEach(b => b.classList.toggle("active", b.dataset.tab === tab));
-  render(tab);
-  window.scrollTo(0,0);
-}
+  function esc(s) {
+    return String(s || "")
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+  }
 
-function render(tab) {
-  if (tab === "home") renderHome();
-  if (tab === "modules") renderModules();
-  if (tab === "audio") renderHelp();
-  if (tab === "progress") renderProgress();
-}
+  function stats() {
+    var total = (window.APP_DATA && window.APP_DATA.modules) ? window.APP_DATA.modules.length : 0;
+    var done = 0;
+    for (var k in (state.done || {})) if (state.done[k]) done++;
+    var pct = total ? Math.round((done / total) * 100) : 0;
+    return { total: total, done: done, pct: pct };
+  }
 
-function renderHome() {
-  screen.innerHTML = `
-    <section class="card" style="padding:0; overflow:hidden">
-      <img src="https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=800&q=70" style="width:100%; height:200px; object-fit:cover">
-      <div style="padding:20px">
-        <h2 class="h2">Bienvenida a CalmaComida 🌿</h2>
-        <p class="p">Sigue este orden para obtener los mejores resultados:</p>
-        
-        <div style="margin-top:15px; display:flex; flex-direction:column; gap:10px">
-          <div class="item" onclick="playExtra('intro')" style="background:#fdf6ee; border:1px solid var(--brand)">
-            <div style="flex:1">
-              <div class="itemTitle">${APP_DATA.extras.intro.title}</div>
-              <div class="p" style="font-size:12px">${APP_DATA.extras.intro.desc}</div>
-            </div>
-            <div style="background:var(--brand); color:white; width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center">▶</div>
-          </div>
-
-          <div class="item" onclick="setActiveTab('modules')">
-            <div style="flex:1">
-              <div class="itemTitle">3. Los 7 Módulos</div>
-              <div class="p" style="font-size:12px">El núcleo del programa. Haz uno por semana.</div>
-            </div>
-            <span>📚</span>
-          </div>
-
-          <div class="item" onclick="playExtra('cierre')" style="background:#fdf6ee; border:1px solid var(--brand)">
-            <div style="flex:1">
-              <div class="itemTitle">${APP_DATA.extras.cierre.title}</div>
-              <div class="p" style="font-size:12px">${APP_DATA.extras.cierre.desc}</div>
-            </div>
-            <div style="background:var(--brand); color:white; width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center">▶</div>
-          </div>
-        </div>
-
-        <div id="extraPlayer" style="display:none; margin-top:20px; padding:15px; background:white; border-radius:12px; box-shadow:var(--shadow)">
-          <p id="extraTitle" style="font-weight:700; color:var(--brand); margin-bottom:8px"></p>
-          <audio id="audioExtra" controls style="width:100%"></audio>
-        </div>
-      </div>
-    </section>
-  `;
-}
-
-window.playExtra = (type) => {
-  const data = APP_DATA.extras[type];
-  const box = $("#extraPlayer");
-  const player = $("#audioExtra");
-  $("#extraTitle").innerText = data.title;
-  box.style.display = "block";
-  player.src = data.file;
-  player.play();
-  box.scrollIntoView({ behavior: 'smooth' });
-};
-
-function renderModules() {
-  const items = APP_DATA.modules.map(m => `
-    <div class="item" onclick="openModule('${m.id}')">
-      <img src="${m.image}" class="audioThumb" style="width:60px; height:60px">
-      <div style="flex:1">
-        <div class="itemTitle">${m.title}</div>
-        <div class="p" style="font-size:12px">${m.desc}</div>
-      </div>
-      <span>${state.done[m.id] ? "✅" : "⚪"}</span>
-    </div>
-  `).join("");
-  screen.innerHTML = `<div class="card"><h2 class="h2">Módulos del Programa</h2><div class="list">${items}</div></div>`;
-}
-
-window.openModule = (id) => {
-  const m = APP_DATA.modules.find(x => x.id === id);
-  screen.innerHTML = `
-    <div class="card">
-      <button class="chip" onclick="setActiveTab('modules')">← Volver</button>
-      <h2 class="h2" style="margin-top:15px">${m.title}</h2>
-      <p class="p" style="margin-bottom:20px">${m.desc}</p>
-      
-      <div style="display:flex; flex-direction:column; gap:15px">
-        <div style="background:#fdf6ee; padding:15px; border-radius:15px; border:1px solid #eadfd6">
-          <p style="font-weight:700; color:var(--brand); margin-bottom:5px">🎧 1. Audio del Módulo</p>
-          <p class="p" style="font-size:12px; margin-bottom:10px">Escucha la teoría y los conceptos clave.</p>
-          <audio controls src="${m.audioMain}" style="width:100%"></audio>
-        </div>
-
-        <div style="background:#fdf6ee; padding:15px; border-radius:15px; border:1px solid #eadfd6">
-          <p style="font-weight:700; color:var(--brand); margin-bottom:5px">🧘 2. Práctica Diaria</p>
-          <p class="p" style="font-size:12px; margin-bottom:10px">Usa este audio cada día de la semana para integrar el hábito.</p>
-          <audio controls src="${m.audioDaily}" style="width:100%"></audio>
-        </div>
-      </div>
-
-      <button class="btn" id="btnDone" style="margin-top:20px">
-        ${state.done[id] ? "✅ Módulo completado" : "Marcar módulo como hecho"}
-      </button>
-    </div>
-  `;
-  $("#btnDone").onclick = () => {
-    state.done[id] = !state.done[id];
+  function setActiveTab(tab) {
+    state.lastTab = tab;
     saveState();
-    openModule(id);
-  };
-};
 
-function renderHelp() {
-  const items = APP_DATA.helpNow.map(a => `
-    <div class="item" onclick="playHelp('${a.file}', '${a.title}')">
-      <img src="${a.image}" class="audioThumb" style="width:60px; height:60px">
-      <div style="flex:1">
-        <div class="itemTitle">${a.title}</div>
-        <p class="p" style="font-size:12px">${a.desc}</p>
-      </div>
-      <div style="background:var(--brand); color:white; width:35px; height:35px; border-radius:50%; display:flex; align-items:center; justify-content:center">▶</div>
-    </div>
-  `).join("");
-  screen.innerHTML = `
-    <div class="card">
-      <h2 class="h2">Ayuda Rápida 🆘</h2>
-      <p class="p" style="margin-bottom:15px">Pulsa según cómo te sientes ahora mismo.</p>
-      <div class="list">${items}</div>
-      <div id="helpBox" style="display:none; margin-top:20px; background:#fdf6ee; padding:15px; border-radius:12px">
-        <p id="helpTitle" style="font-weight:700; color:var(--brand); margin-bottom:8px"></p>
-        <audio id="audioHelp" controls style="width:100%"></audio>
-      </div>
-    </div>
-  `;
-}
+    var tabs = document.querySelectorAll(".tab");
+    for (var i = 0; i < tabs.length; i++) {
+      tabs[i].classList.toggle("active", tabs[i].getAttribute("data-tab") === tab);
+    }
+    render(tab);
+    window.scrollTo(0, 0);
+  }
 
-window.playHelp = (file, title) => {
-  const box = $("#helpBox");
-  const player = $("#audioHelp");
-  $("#helpTitle").innerText = "Escuchando: " + title;
-  box.style.display = "block";
-  player.src = file;
-  player.play();
-  box.scrollIntoView({ behavior: 'smooth' });
-};
+  function render(tab) {
+    if (!window.APP_DATA) {
+      screen.innerHTML =
+        '<div class="card"><h2 class="h2" style="color:#b00020">Error</h2>' +
+        '<p class="p">No se cargó <b>data.js</b> (APP_DATA no existe).</p></div>';
+      return;
+    }
+    if (tab === "home") renderHome();
+    else if (tab === "modules") renderModules();
+    else if (tab === "audio") renderAudios();
+    else if (tab === "progress") renderProgress();
+    else renderHome();
+  }
 
-function renderProgress() {
-  const { done, total, pct } = stats();
-  screen.innerHTML = `
-    <div class="card" style="text-align:center; padding:40px 20px">
-      <img src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=800&q=70" style="width:100%; height:180px; object-fit:cover; border-radius:15px; margin-bottom:20px">
-      <div style="font-size:60px">🌱</div>
-      <h2 class="h2">Tu Transformación</h2>
-      <div class="progress-container"><div class="progress-bar" style="width:${pct}%"></div></div>
-      <p class="p" style="margin-top:15px">Has completado el <b>${pct}%</b> del programa.</p>
-      <button class="btn ghost" style="margin-top:30px; opacity:0.6" onclick="if(confirm('¿Reiniciar?')){localStorage.clear(); location.reload();}">Reiniciar progreso</button>
-    </div>
-  `;
-}
+  function renderHome() {
+    var s = stats();
+    var intro = findAudio("intro");
+    var cierre = findAudio("cierre");
 
-document.querySelectorAll(".tab").forEach(btn => {
-  btn.onclick = () => setActiveTab(btn.dataset.tab);
-});
+    screen.innerHTML =
+      '<section class="card">' +
+        '<h2 class="h2">Cómo usar CalmaComida</h2>' +
+        '<p class="p">Sigue este orden para que funcione sin esfuerzo:</p>' +
 
-setActiveTab(state.lastTab || "home");
+        '<div class="list">' +
+          audioCard(intro, "1) Empieza por la Introducción (una vez).") +
+          '<div class="item" onclick="window.__goModules()">' +
+            '<div style="flex:1">' +
+              '<div class="itemTitle">2) Haz los 7 módulos</div>' +
+              '<div class="p" style="font-size:12px;margin-top:4px">En cada módulo: escucha la sesión principal y luego usa la práctica diaria durante la semana.</div>' +
+            '</div><div>📚</div>' +
+          '</div>' +
+          '<div class="item" onclick="window.__goAudios()">' +
+            '<div style="flex:1">' +
+              '<div class="itemTitle">3) Si tienes un impulso, ve a “Audios”</div>' +
+              '<div class="p" style="font-size:12px;margin-top:4px">Ahí tienes Introducción, prácticas diarias y cierre. Úsalos cuando lo necesites.</div>' +
+            '</div><div>🆘</div>' +
+          '</div>' +
+          audioCard(cierre, "4) Al final escucha el Cierre/Mantenimiento.") +
+        '</div>' +
+
+        '<div style="margin-top:14px">' +
+          '<div class="progress-container"><div class="progress-bar" style="width:' + s.pct + '%"></div></div>' +
+          '<p class="p" style="margin-top:10px">Progreso: <b>' + s.done + '/' + s.total + '</b> módulos (' + s.pct + '%)</p>' +
+        '</div>' +
+      '</section>';
+
+    window.__goModules = function(){ setActiveTab("modules"); };
+    window.__goAudios  = function(){ setActiveTab("audio"); };
+    window.__play = function(file){
+      var a = document.getElementById("homePlayer");
+      if (!a) return;
+      a.src = file;
+      a.play && a.play();
+    };
+  }
+
+  function renderModules() {
+    var mods = window.APP_DATA.modules || [];
+    var html = '<section class="card"><h2 class="h2">Módulos</h2><p class="p">Entra en un módulo para ver: objetivo, cómo practicar y los 2 audios.</p><div class="list">';
+
+    for (var i = 0; i < mods.length; i++) {
+      var m = mods[i];
+      var done = !!(state.done && state.done[m.id]);
+      html +=
+        '<div class="item" onclick="window.__openModule(\'' + esc(m.id) + '\')">' +
+          '<img class="audioThumb" src="' + esc(m.image || "") + '" style="width:64px;height:64px" />' +
+          '<div style="flex:1">' +
+            '<div class="itemTitle">' + esc(m.title) + '</div>' +
+            '<div class="p" style="font-size:12px;margin-top:4px">' + esc(m.goal || "") + '</div>' +
+          '</div>' +
+          '<div style="font-size:20px">' + (done ? "✅" : "⚪") + '</div>' +
+        '</div>';
+    }
+
+    html += '</div></section>';
+    screen.innerHTML = html;
+
+    window.__openModule = function (id) {
+      for (var j = 0; j < mods.length; j++) if (mods[j].id === id) return openModule(mods[j]);
+    };
+  }
+
+  function openModule(m) {
+    var done = !!(state.done && state.done[m.id]);
+
+    screen.innerHTML =
+      '<section class="card">' +
+        '<button class="chip" onclick="window.__backMods()">← Volver</button>' +
+        '<img src="' + esc(m.image || "") + '" style="width:100%;height:180px;object-fit:cover;border-radius:14px;margin:12px 0" />' +
+        '<h2 class="h2">' + esc(m.title) + '</h2>' +
+
+        (m.goal ? '<p class="p"><b>Objetivo:</b> ' + esc(m.goal) + '</p>' : '') +
+        (m.practice ? '<p class="p" style="margin-top:10px"><b>Cómo usar la práctica diaria:</b> ' + esc(m.practice) + '</p>' : '') +
+        (m.expect ? '<p class="p" style="margin-top:10px"><b>Qué puedes esperar:</b> ' + esc(m.expect) + '</p>' : '') +
+
+        '<div style="margin-top:16px; background:#fdf6ee; border:1px solid #eadfd6; padding:14px; border-radius:14px">' +
+          '<div style="font-weight:900;color:var(--brand);margin-bottom:8px">🎧 Audio del módulo</div>' +
+          '<audio controls preload="metadata" src="' + esc(m.audio || "") + '" style="width:100%"></audio>' +
+        '</div>' +
+
+        '<div style="margin-top:12px; background:#fdf6ee; border:1px solid #eadfd6; padding:14px; border-radius:14px">' +
+          '<div style="font-weight:900;color:var(--brand);margin-bottom:8px">🧘 Práctica diaria</div>' +
+          '<div class="p" style="font-size:12px;margin-bottom:8px">Úsala 1 vez al día (o antes de una comida) durante la semana del módulo.</div>' +
+          '<audio controls preload="metadata" src="' + esc(m.daily || "") + '" style="width:100%"></audio>' +
+        '</div>' +
+
+        '<button class="btn" id="btnDone" style="margin-top:16px">' + (done ? "✅ Módulo completado" : "Marcar módulo como hecho") + '</button>' +
+      '</section>';
+
+    window.__backMods = function(){ setActiveTab("modules"); };
+
+    var b = document.getElementById("btnDone");
+    b.onclick = function () {
+      state.done = state.done || {};
+      state.done[m.id] = !state.done[m.id];
+      saveState();
+      openModule(m);
+    };
+  }
+
+  function renderAudios() {
+    var list = window.APP_DATA.audios || [];
+    var html =
+      '<section class="card">' +
+        '<h2 class="h2">Audios</h2>' +
+        '<p class="p">Aquí tienes la introducción, todos los módulos (sesión y práctica) y el cierre. Si estás en un momento difícil, usa una “práctica diaria”.</p>' +
+        '<div class="list">';
+
+    for (var i = 0; i < list.length; i++) {
+      var a = list[i];
+      html +=
+        '<div class="item" onclick="window.__playAudio(\'' + esc(a.file) + '\', \'' + esc(a.title) + '\')">' +
+          '<div style="flex:1">' +
+            '<div class="itemTitle">' + esc(a.title) + '</div>' +
+            '<div class="p" style="font-size:12px;margin-top:4px">Toca para reproducir.</div>' +
+          '</div>' +
+          '<div style="background:var(--brand);color:white;width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center">▶</div>' +
+        '</div>';
+    }
+
+    html +=
+        '</div>' +
+        '<div id="audioBox" style="display:none; margin-top:14px; background:#fdf6ee; border:1px solid #eadfd6; padding:14px; border-radius:14px">' +
+          '<div id="audioTitle" style="font-weight:900;color:var(--brand)"></div>' +
+          '<audio id="audioPlayer" controls preload="metadata" style="width:100%;margin-top:10px"></audio>' +
+        '</div>' +
+      '</section>';
+
+    screen.innerHTML = html;
+
+    window.__playAudio = function (file, title) {
+      var box = document.getElementById("audioBox");
+      var t = document.getElementById("audioTitle");
+      var p = document.getElementById("audioPlayer");
+      t.textContent = title;
+      box.style.display = "block";
+      p.src = file;
+      p.play && p.play();
+      box.scrollIntoView({ behavior: "smooth", block: "start" });
+    };
+  }
+
+  function renderProgress() {
+    var s = stats();
+    screen.innerHTML =
+      '<section class="card" style="padding:0; overflow:hidden">' +
+        '<img src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=1400&q=70" style="width:100%;height:180px;object-fit:cover" />' +
+        '<div style="padding:18px 18px 20px; text-align:center">' +
+          '<div style="font-size:54px">🌱</div>' +
+          '<h2 class="h2">Tu Transformación</h2>' +
+          '<div class="progress-container" style="margin-top:14px"><div class="progress-bar" style="width:' + s.pct + '%"></div></div>' +
+          '<p class="p" style="margin-top:10px">Has completado <b>' + s.done + '/' + s.total + '</b> módulos (' + s.pct + '%)</p>' +
+        '</div>' +
+      '</section>';
+  }
+
+  function findAudio(id) {
+    var list = (window.APP_DATA && window.APP_DATA.audios) ? window.APP_DATA.audios : [];
+    for (var i = 0; i < list.length; i++) if (list[i].id === id) return list[i];
+    return null;
+  }
+
+  function audioCard(a, hint) {
+    if (!a) return "";
+    return '' +
+      '<div class="item" onclick="window.__play(\'' + esc(a.file) + '\')">' +
+        '<div style="flex:1">' +
+          '<div class="itemTitle">' + esc(a.title) + '</div>' +
+          '<div class="p" style="font-size:12px;margin-top:4px">' + esc(hint || "") + '</div>' +
+        '</div>' +
+        '<div style="background:var(--brand);color:white;width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center">▶</div>' +
+      '</div>' +
+      '<audio id="homePlayer" controls preload="metadata" style="width:100%;margin-top:10px"></audio>';
+  }
+
+  function wireReset() {
+    if (!btnReset) return;
+    btnReset.onclick = function () {
+      if (confirm("¿Reiniciar progreso?")) {
+        localStorage.removeItem(STORAGE_KEY);
+        state = { done: {}, lastTab: "home" };
+        setActiveTab("home");
+      }
+    };
+  }
+
+  function wireTabs() {
+    var tabs = document.querySelectorAll(".tab");
+    for (var i = 0; i < tabs.length; i++) {
+      (function (btn) {
+        btn.onclick = function () {
+          setActiveTab(btn.getAttribute("data-tab"));
+        };
+      })(tabs[i]);
+    }
+  }
+
+  // Init
+  loadState();
+  wireReset();
+  wireTabs();
+  setActiveTab(state.lastTab || "home");
+})();
