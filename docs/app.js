@@ -1,43 +1,31 @@
 const $ = (sel) => document.querySelector(sel);
 const screen = $("#screen");
-const STORAGE_KEY = "calmacomida_premium_v2";
+const STORAGE_KEY = "calmacomida_vfinal";
 
 let state = { done: {}, lastTab: "home" };
 try {
   const saved = localStorage.getItem(STORAGE_KEY);
   if (saved) state = JSON.parse(saved);
-} catch (e) {}
+} catch(e) {}
 
-function saveState() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-}
+function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
 
 function stats() {
-  const total = (window.APP_DATA?.modules || []).length;
-  const done = Object.values(state.done || {}).filter(Boolean).length;
-  const pct = total ? Math.round((done / total) * 100) : 0;
+  const total = APP_DATA.modules.length;
+  const done  = Object.values(state.done).filter(Boolean).length;
+  const pct   = total ? Math.round((done / total) * 100) : 0;
   return { total, done, pct };
 }
 
 function setActiveTab(tab) {
   state.lastTab = tab;
   saveState();
-  document.querySelectorAll(".tab").forEach((b) =>
-    b.classList.toggle("active", b.dataset.tab === tab)
-  );
+  document.querySelectorAll(".tab").forEach(b => b.classList.toggle("active", b.dataset.tab === tab));
   render(tab);
-  window.scrollTo(0, 0);
+  window.scrollTo(0,0);
 }
 
 function render(tab) {
-  if (!window.APP_DATA) {
-    screen.innerHTML = `
-      <div class="card">
-        <h2 class="h2" style="color:#b00020">Error</h2>
-        <p class="p">No se cargó <b>data.js</b> (APP_DATA no existe).</p>
-      </div>`;
-    return;
-  }
   if (tab === "home") renderHome();
   if (tab === "modules") renderModules();
   if (tab === "audio") renderHelp();
@@ -45,106 +33,101 @@ function render(tab) {
 }
 
 function renderHome() {
-  const { pct, done, total } = stats();
-  const tHtml = (APP_DATA.testimonials || [])
-    .map(
-      (t) => `
-      <div style="background:#fdf6ee; padding:14px; border-radius:12px; border-left:4px solid var(--brand); margin-top:10px">
-        <div class="p" style="font-style:italic">“${t.text}”</div>
-        <div style="margin-top:6px; font-weight:800; font-size:12px; color:var(--brand)">— ${t.name}</div>
-      </div>`
-    )
-    .join("");
-
   screen.innerHTML = `
     <section class="card" style="padding:0; overflow:hidden">
-      <img class="heroImg" src="https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=1400&q=70" style="border-radius:0;height:220px">
-      <div style="padding:18px 18px 20px">
-        <h2 class="h2" style="margin-bottom:6px">${APP_DATA.name}</h2>
-        <p class="p">${APP_DATA.subtitle || ""}</p>
+      <img src="https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=800&q=70" style="width:100%; height:200px; object-fit:cover">
+      <div style="padding:20px">
+        <h2 class="h2">Bienvenida a CalmaComida 🌿</h2>
+        <p class="p">Sigue este orden para obtener los mejores resultados:</p>
+        
+        <div style="margin-top:15px; display:flex; flex-direction:column; gap:10px">
+          <div class="item" onclick="playExtra('intro')" style="background:#fdf6ee; border:1px solid var(--brand)">
+            <div style="flex:1">
+              <div class="itemTitle">${APP_DATA.extras.intro.title}</div>
+              <div class="p" style="font-size:12px">${APP_DATA.extras.intro.desc}</div>
+            </div>
+            <div style="background:var(--brand); color:white; width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center">▶</div>
+          </div>
 
-        <div style="margin-top:14px; background:#fdf6ee; border:1px solid #eadfd6; padding:14px; border-radius:14px">
-          <div style="font-weight:800; color:var(--brand); margin-bottom:6px">Cómo usar la app (2 minutos al día)</div>
-          <ul class="p" style="padding-left:18px">
-            <li><b>Empieza por Módulos</b>: escucha 1 audio y marca “Completado”.</li>
-            <li><b>Ayuda</b>: úsalo en el momento del impulso/ansiedad/culpa (es tu botón SOS).</li>
-            <li><b>Progreso</b>: mira tu avance (${done}/${total} módulos · ${pct}%).</li>
-          </ul>
+          <div class="item" onclick="setActiveTab('modules')">
+            <div style="flex:1">
+              <div class="itemTitle">3. Los 7 Módulos</div>
+              <div class="p" style="font-size:12px">El núcleo del programa. Haz uno por semana.</div>
+            </div>
+            <span>📚</span>
+          </div>
+
+          <div class="item" onclick="playExtra('cierre')" style="background:#fdf6ee; border:1px solid var(--brand)">
+            <div style="flex:1">
+              <div class="itemTitle">${APP_DATA.extras.cierre.title}</div>
+              <div class="p" style="font-size:12px">${APP_DATA.extras.cierre.desc}</div>
+            </div>
+            <div style="background:var(--brand); color:white; width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center">▶</div>
+          </div>
         </div>
 
-        <button class="btn" id="btnStart">Empezar ahora</button>
-        <button class="btn ghost" id="btnHelp">Necesito ayuda rápida</button>
+        <div id="extraPlayer" style="display:none; margin-top:20px; padding:15px; background:white; border-radius:12px; box-shadow:var(--shadow)">
+          <p id="extraTitle" style="font-weight:700; color:var(--brand); margin-bottom:8px"></p>
+          <audio id="audioExtra" controls style="width:100%"></audio>
+        </div>
       </div>
     </section>
-
-    <section class="card">
-      <h2 class="h2" style="font-size:18px">Tu avance</h2>
-      <div class="progress-container"><div class="progress-bar" style="width:${pct}%"></div></div>
-      <p class="p" style="margin-top:10px">Vas por el <b>${pct}%</b> (${done}/${total} módulos)</p>
-    </section>
-
-    ${
-      tHtml
-        ? `<section class="card"><h2 class="h2" style="font-size:18px">Lo que dicen</h2>${tHtml}</section>`
-        : ``
-    }
   `;
-
-  $("#btnStart").onclick = () => setActiveTab("modules");
-  $("#btnHelp").onclick = () => setActiveTab("audio");
 }
+
+window.playExtra = (type) => {
+  const data = APP_DATA.extras[type];
+  const box = $("#extraPlayer");
+  const player = $("#audioExtra");
+  $("#extraTitle").innerText = data.title;
+  box.style.display = "block";
+  player.src = data.file;
+  player.play();
+  box.scrollIntoView({ behavior: 'smooth' });
+};
 
 function renderModules() {
-  const items = (APP_DATA.modules || [])
-    .map(
-      (m) => `
+  const items = APP_DATA.modules.map(m => `
     <div class="item" onclick="openModule('${m.id}')">
-      <img src="${m.image || ""}" class="audioThumb" style="width:70px;height:70px">
+      <img src="${m.image}" class="audioThumb" style="width:60px; height:60px">
       <div style="flex:1">
         <div class="itemTitle">${m.title}</div>
-        <div class="p" style="font-size:12px; margin-top:4px">${m.desc || ""}</div>
+        <div class="p" style="font-size:12px">${m.desc}</div>
       </div>
-      <div style="font-size:20px">${state.done?.[m.id] ? "✅" : "⚪"}</div>
-    </div>`
-    )
-    .join("");
-
-  screen.innerHTML = `
-    <section class="card">
-      <h2 class="h2">Módulos 📚</h2>
-      <p class="p">Escucha y marca como completado. Sin prisa, sin juicio.</p>
-      <div class="list">${items}</div>
-    </section>`;
+      <span>${state.done[m.id] ? "✅" : "⚪"}</span>
+    </div>
+  `).join("");
+  screen.innerHTML = `<div class="card"><h2 class="h2">Módulos del Programa</h2><div class="list">${items}</div></div>`;
 }
 
-window.openModule = function (id) {
-  const m = (APP_DATA.modules || []).find((x) => x.id === id);
-  if (!m) return;
-
-  const isDone = !!state.done?.[id];
-
+window.openModule = (id) => {
+  const m = APP_DATA.modules.find(x => x.id === id);
   screen.innerHTML = `
-    <section class="card">
-      <button class="chip" id="backMods">← Volver</button>
-      <img src="${m.image || ""}" style="width:100%;height:170px;object-fit:cover;border-radius:14px;margin:14px 0">
-      <h2 class="h2">${m.title}</h2>
-      ${m.desc ? `<p class="p" style="margin-top:6px">${m.desc}</p>` : ""}
+    <div class="card">
+      <button class="chip" onclick="setActiveTab('modules')">← Volver</button>
+      <h2 class="h2" style="margin-top:15px">${m.title}</h2>
+      <p class="p" style="margin-bottom:20px">${m.desc}</p>
+      
+      <div style="display:flex; flex-direction:column; gap:15px">
+        <div style="background:#fdf6ee; padding:15px; border-radius:15px; border:1px solid #eadfd6">
+          <p style="font-weight:700; color:var(--brand); margin-bottom:5px">🎧 1. Audio del Módulo</p>
+          <p class="p" style="font-size:12px; margin-bottom:10px">Escucha la teoría y los conceptos clave.</p>
+          <audio controls src="${m.audioMain}" style="width:100%"></audio>
+        </div>
 
-      <div style="margin-top:16px; background:#fdf6ee; border:1px solid #eadfd6; padding:16px; border-radius:14px">
-        <div style="font-weight:800; color:var(--brand); margin-bottom:8px">Audio del módulo</div>
-        <audio controls preload="metadata" src="${m.audio || ""}"></audio>
-        <div class="p" style="font-size:12px; margin-top:8px">
-          Si no se reproduce, revisa que el archivo exista en la carpeta <b>/audio</b> y que el nombre coincida.
+        <div style="background:#fdf6ee; padding:15px; border-radius:15px; border:1px solid #eadfd6">
+          <p style="font-weight:700; color:var(--brand); margin-bottom:5px">🧘 2. Práctica Diaria</p>
+          <p class="p" style="font-size:12px; margin-bottom:10px">Usa este audio cada día de la semana para integrar el hábito.</p>
+          <audio controls src="${m.audioDaily}" style="width:100%"></audio>
         </div>
       </div>
 
-      <button class="btn" id="toggleDone">${isDone ? "✅ Completado" : "Marcar como hecho"}</button>
-    </section>
+      <button class="btn" id="btnDone" style="margin-top:20px">
+        ${state.done[id] ? "✅ Módulo completado" : "Marcar módulo como hecho"}
+      </button>
+    </div>
   `;
-
-  $("#backMods").onclick = () => setActiveTab("modules");
-  $("#toggleDone").onclick = () => {
-    state.done = state.done || {};
+  $("#btnDone").onclick = () => {
     state.done[id] = !state.done[id];
     saveState();
     openModule(id);
@@ -152,85 +135,55 @@ window.openModule = function (id) {
 };
 
 function renderHelp() {
-  const items = (APP_DATA.audioStates || [])
-    .map(
-      (a) => `
-    <div class="item" onclick="playHelp('${a.file}', '${escapeHtml(a.title)}', '${escapeHtml(a.desc || "")}')">
-      <img src="${a.image || ""}" class="audioThumb" style="width:60px;height:60px">
+  const items = APP_DATA.helpNow.map(a => `
+    <div class="item" onclick="playHelp('${a.file}', '${a.title}')">
+      <img src="${a.image}" class="audioThumb" style="width:60px; height:60px">
       <div style="flex:1">
         <div class="itemTitle">${a.title}</div>
-        <div class="p" style="font-size:12px; margin-top:4px">${a.desc || ""}</div>
+        <p class="p" style="font-size:12px">${a.desc}</p>
       </div>
-      <div style="background:var(--brand);color:white;width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0">▶</div>
-    </div>`
-    )
-    .join("");
-
+      <div style="background:var(--brand); color:white; width:35px; height:35px; border-radius:50%; display:flex; align-items:center; justify-content:center">▶</div>
+    </div>
+  `).join("");
   screen.innerHTML = `
-    <section class="card">
+    <div class="card">
       <h2 class="h2">Ayuda Rápida 🆘</h2>
-      <p class="p">Elige cómo te sientes. Te acompaño ahora mismo.</p>
+      <p class="p" style="margin-bottom:15px">Pulsa según cómo te sientes ahora mismo.</p>
       <div class="list">${items}</div>
-
-      <div id="playerBox" style="display:none; margin-top:18px; background:#fdf6ee; border:1px solid #eadfd6; padding:16px; border-radius:14px">
-        <div id="pTitle" style="font-weight:900; color:var(--brand)"></div>
-        <div id="pDesc" class="p" style="font-size:12px; margin-top:6px"></div>
-        <audio id="helpPlayer" controls preload="metadata" style="margin-top:12px"></audio>
+      <div id="helpBox" style="display:none; margin-top:20px; background:#fdf6ee; padding:15px; border-radius:12px">
+        <p id="helpTitle" style="font-weight:700; color:var(--brand); margin-bottom:8px"></p>
+        <audio id="audioHelp" controls style="width:100%"></audio>
       </div>
-    </section>
+    </div>
   `;
 }
 
-window.playHelp = function (file, title, desc) {
-  const box = $("#playerBox");
-  const p = $("#helpPlayer");
-  $("#pTitle").textContent = title || "";
-  $("#pDesc").textContent = desc || "";
+window.playHelp = (file, title) => {
+  const box = $("#helpBox");
+  const player = $("#audioHelp");
+  $("#helpTitle").innerText = "Escuchando: " + title;
   box.style.display = "block";
-  p.src = file;
-  p.play().catch(() => {});
-  box.scrollIntoView({ behavior: "smooth", block: "start" });
+  player.src = file;
+  player.play();
+  box.scrollIntoView({ behavior: 'smooth' });
 };
 
 function renderProgress() {
   const { done, total, pct } = stats();
-  const progressImg =
-    "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=1400&q=70";
-
   screen.innerHTML = `
-    <section class="card" style="padding:0; overflow:hidden">
-      <img src="${progressImg}" style="width:100%;height:180px;object-fit:cover">
-      <div style="padding:18px 18px 20px; text-align:center">
-        <div style="font-size:54px">🌱</div>
-        <h2 class="h2">Tu Transformación</h2>
-        <div class="progress-container" style="margin-top:14px"><div class="progress-bar" style="width:${pct}%"></div></div>
-        <p class="p" style="margin-top:10px">Has completado <b>${pct}%</b> — ${done}/${total} módulos</p>
-
-        <button class="btn ghost" id="reset" style="margin-top:14px; font-size:12px; opacity:.75">Reiniciar progreso</button>
-      </div>
-    </section>
+    <div class="card" style="text-align:center; padding:40px 20px">
+      <img src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=800&q=70" style="width:100%; height:180px; object-fit:cover; border-radius:15px; margin-bottom:20px">
+      <div style="font-size:60px">🌱</div>
+      <h2 class="h2">Tu Transformación</h2>
+      <div class="progress-container"><div class="progress-bar" style="width:${pct}%"></div></div>
+      <p class="p" style="margin-top:15px">Has completado el <b>${pct}%</b> del programa.</p>
+      <button class="btn ghost" style="margin-top:30px; opacity:0.6" onclick="if(confirm('¿Reiniciar?')){localStorage.clear(); location.reload();}">Reiniciar progreso</button>
+    </div>
   `;
-
-  $("#reset").onclick = () => {
-    if (confirm("¿Seguro que quieres borrar tu progreso?")) {
-      localStorage.removeItem(STORAGE_KEY);
-      state = { done: {}, lastTab: "home" };
-      setActiveTab("home");
-    }
-  };
 }
 
-function escapeHtml(s) {
-  return String(s || "")
-    .replaceAll("&", "&amp;")
-    .replaceAll("<​", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-}
-
-// Arranque
-document.querySelectorAll(".tab").forEach((btn) => {
+document.querySelectorAll(".tab").forEach(btn => {
   btn.onclick = () => setActiveTab(btn.dataset.tab);
 });
+
 setActiveTab(state.lastTab || "home");
