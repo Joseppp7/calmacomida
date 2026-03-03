@@ -61,6 +61,29 @@ window.APP_DATA = {
       daily: AUDIO_CDN + "module-7-daily.mp3" + AUDIO_QS 
     }
   ],
+audioStates: [
+    {
+      id: "impulso",
+      title: "Tengo un impulso ahora",
+      desc: "Para 2 minutos antes de decidir. Este audio te ayuda a recuperar el control.",
+      image: "./img/ayuda-impulso.jpg",
+      file: AUDIO_CDN + "module-3-daily.mp3" + AUDIO_QS
+    },
+    {
+      id: "ansiedad",
+      title: "Siento ansiedad",
+      desc: "Vamos a bajar la activación del cuerpo antes de usar comida para calmarla.",
+      image: "./img/ayuda-ansiedad.jpg",
+      file: AUDIO_CDN + "module-5-daily.mp3" + AUDIO_QS
+    },
+    {
+      id: "culpa",
+      title: "Me siento culpable por haber comido",
+      desc: "La culpa alimenta el ciclo. Escucha esto para romperlo.",
+      image: "./img/ayuda-culpa.jpg",
+      file: AUDIO_CDN + "module-7-daily.mp3" + AUDIO_QS
+    }
+  ],
   audios: [
     { id: "intro", title: "Introducción al curso", file: AUDIO_CDN + "intro-curso.mp3" + AUDIO_QS },
     { id: "cierre", title: "Cierre y mantenimiento", file: AUDIO_CDN + "cierre-mantenimiento.mp3" + AUDIO_QS }
