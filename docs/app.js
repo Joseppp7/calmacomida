@@ -1,4 +1,4 @@
-// ===== CALMACOMIDA · APP v705 (FIXED) =====
+// ===== CALMACOMIDA · APP v706 (FIXED PATHS) =====
 
 let state = {
   currentTab: 'home',
@@ -62,10 +62,10 @@ function renderHome() {
       Tu camino hacia la calma
     </h2>
     <div class="grid">
-      ${APP_DATA.modules.slice(0, 3).map(mod => `
+      ${APP_DATA.modules.slice(0, 3).map((mod, i) => `
         <div class="card" onclick="openModule('${mod.id}')" style="cursor: pointer;">
-          <div style="width: 100%; height: 180px; border-radius: 16px; overflow: hidden; margin-bottom: 1rem; background: #E8EBE9;">
-            <img src="images/module-${mod.id.replace('mod', '')}.jpg" alt="${mod.title}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.style.display='none'">
+          <div style="width: 100%; height: 180px; border-radius: 16px; overflow: hidden; margin-bottom: 1rem; background: linear-gradient(135deg, #7D9D85 0%, #C17B6F 100%);">
+            <img src="images/module-${i + 1}.jpg" alt="${mod.title}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.style.background='linear-gradient(135deg, #7D9D85 0%, #C17B6F 100%)'">
           </div>
           <h3 style="font-size: 1.1rem; font-weight: 600; margin-bottom: 0.5rem; color: #2C3E37;">${mod.title}</h3>
           <p style="font-size: 0.9rem; color: #6B7C73; line-height: 1.5;">${mod.subtitle}</p>
@@ -89,8 +89,8 @@ function renderModules() {
     <div class="list">
       ${APP_DATA.modules.map((mod, i) => `
         <div class="card" onclick="openModule('${mod.id}')" style="cursor: pointer; display: flex; gap: 1rem; align-items: center;">
-          <div style="width: 100px; height: 100px; border-radius: 12px; overflow: hidden; flex-shrink: 0; background: #E8EBE9;">
-            <img src="images/module-${mod.id.replace('mod', '')}.jpg" alt="${mod.title}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.style.display='none'">
+          <div style="width: 100px; height: 100px; border-radius: 12px; overflow: hidden; flex-shrink: 0; background: linear-gradient(135deg, #7D9D85 0%, #C17B6F 100%);">
+            <img src="images/module-${i + 1}.jpg" alt="${mod.title}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.style.display='none'">
           </div>
           <div style="flex: 1;">
             <div style="font-size: 0.75rem; font-weight: 600; color: #7D9D85; margin-bottom: 0.25rem;">MÓDULO ${i + 1}</div>
@@ -110,14 +110,15 @@ function openModule(id) {
 
 function renderModuleDetail() {
   const mod = state.currentModule;
-  const modNum = mod.id.replace('mod', '');
+  const modIndex = APP_DATA.modules.findIndex(m => m.id === mod.id);
+  const modNum = modIndex + 1;
   
   screen.innerHTML = `
     <button onclick="closeModule()" style="background: none; border: none; color: #7D9D85; font-size: 1rem; margin-bottom: 1rem; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; padding: 0;">
       ← Volver a módulos
     </button>
 
-    <div style="width: 100%; height: 240px; border-radius: 20px; overflow: hidden; margin-bottom: 1.5rem; background: #E8EBE9;">
+    <div style="width: 100%; height: 240px; border-radius: 20px; overflow: hidden; margin-bottom: 1.5rem; background: linear-gradient(135deg, #7D9D85 0%, #C17B6F 100%);">
       <img src="images/module-${modNum}.jpg" alt="${mod.title}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.style.display='none'">
     </div>
 
@@ -177,43 +178,3 @@ function renderAudios() {
         <div class="card" style="display: flex; gap: 1rem; align-items: center;">
           <div style="width: 80px; height: 80px; border-radius: 12px; background: linear-gradient(135deg, #7D9D85 0%, #C17B6F 100%); flex-shrink: 0; display: flex; align-items: center; justify-content: center;">
             <span style="color: white; font-size: 1.5rem;">▶</span>
-          </div>
-          <div style="flex: 1;">
-            <div style="font-size: 0.75rem; font-weight: 600; color: #7D9D85; margin-bottom: 0.25rem;">${audio.category}</div>
-            <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 0.25rem; color: #2C3E37;">${audio.title}</h3>
-            <p style="font-size: 0.85rem; color: #6B7C73;">${audio.duration}</p>
-          </div>
-        </div>
-      `).join('')}
-    </div>
-  `;
-}
-
-// PROGRESS
-function renderProgress() {
-  const completed = Object.keys(state.progress).length;
-  const total = APP_DATA.modules.length;
-  const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
-
-  screen.innerHTML = `
-    <h1 style="font-family: 'Playfair Display', serif; font-size: 1.8rem; margin-bottom: 1.5rem; color: #2C3E37;">
-      Tu progreso
-    </h1>
-    
-    <div class="card" style="text-align: center; padding: 2rem;">
-      <div style="font-size: 3rem; font-weight: 700; color: #7D9D85; margin-bottom: 0.5rem;">${percent}%</div>
-      <p style="color: #6B7C73; font-size: 1rem;">completado</p>
-      <div style="width: 100%; height: 8px; background: #E8EBE9; border-radius: 10px; margin-top: 1.5rem; overflow: hidden;">
-        <div style="width: ${percent}%; height: 100%; background: linear-gradient(90deg, #7D9D85 0%, #C17B6F 100%); transition: width 0.3s;"></div>
-      </div>
-    </div>
-
-    <p style="color: #6B7C73; text-align: center; margin-top: 2rem; line-height: 1.6;">
-      Has completado ${completed} de ${total} módulos.<br>
-      Cada paso cuenta. Sigue adelante.
-    </p>
-  `;
-}
-
-// Init
-render();

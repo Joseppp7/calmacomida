@@ -1,107 +1,103 @@
-// ===== CALMACOMIDA · DATA v700 =====
-var AUDIO_CDN = "https://github.com/Joseppp7/calmacomida/releases/download/audio-v1/";
-var AUDIO_QS  = "?raw=1";
+// ===== CALMACOMIDA · DATA v703 (con imágenes locales) =====
 
-window.APP_DATA = {
+const AUDIO_CDN = 'https://drive.google.com/uc?export=download&id=';
+const AUDIO_QS = '';
 
+const APP_DATA = {
   modules: [
     {
-      id: "module-1",
-      title: "Calma al comenzar",
-      subtitle: "El primer paso hacia la consciencia",
-      image: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&w=800&q=80",
-      audio: AUDIO_CDN + "module-1.mp3" + AUDIO_QS,
-      daily: AUDIO_CDN + "module-1-daily.mp3" + AUDIO_QS,
-      goal: "Aprender a bajar la velocidad mental y física al empezar a comer. El objetivo no es comer menos todavía, sino que el cerebro salga del modo automático y entre en modo consciente.",
-      practice: "Escucha el audio principal en un momento tranquilo. Después, durante el día, usa la práctica diaria antes de una comida real. Solo tienes que parar 30 segundos antes de empezar, respirar lento y observar la comida sin juzgar.",
-      expect: "Al principio no notarás grandes cambios en la cantidad de comida. Lo normal es sentir simplemente más calma y menos prisa. Ese es el primer signo de que el programa está funcionando."
+      id: 'mod1',
+      title: 'El poder sobre los impulsos',
+      subtitle: 'Recupera el control sin luchar contra ti misma',
+      image: './images/module-1.jpg',
+      audio: AUDIO_CDN + '1aBcDeFgHiJkLmNoPqRsTuVwXyZ' + AUDIO_QS,
+      daily: AUDIO_CDN + '1aBcDeFgHiJkLmNoPqRsTuVwXyZ' + AUDIO_QS,
+      goal: 'Aprender a reconocer y gestionar los impulsos de comer sin hambre física, recuperando tu capacidad de elección consciente.',
+      practice: 'Técnica de pausa de 90 segundos antes de comer. Respiración consciente para observar el impulso sin actuar automáticamente.',
+      expect: 'Sentirás que recuperas el control. Los impulsos seguirán apareciendo, pero ya no te arrastrarán. Empezarás a elegir en lugar de reaccionar.'
     },
     {
-      id: "module-2",
-      title: "Hambre real vs. hambre emocional",
-      subtitle: "Aprende a escuchar tu cuerpo de verdad",
-      image: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=800&q=80",
-      audio: AUDIO_CDN + "module-2.mp3" + AUDIO_QS,
-      daily: AUDIO_CDN + "module-2-daily.mp3" + AUDIO_QS,
-      goal: "Aprender a diferenciar hambre física de hambre emocional. El objetivo es que el cerebro deje de usar la comida como respuesta automática a cualquier emoción.",
-      practice: "Antes de comer algo fuera de horario, detente 10 segundos y pregúntate: ¿esto es hambre en el cuerpo o necesidad emocional? No hay que prohibir comer, solo identificarlo.",
-      expect: "Descubrirás que muchas ganas de comer duran solo unos minutos. No desaparecen por fuerza de voluntad, desaparecen porque eran una emoción."
+      id: 'mod2',
+      title: 'Reconocer el hambre real',
+      subtitle: 'Distingue hambre física de hambre emocional',
+      image: './images/module-2.jpg',
+      audio: AUDIO_CDN + '2aBcDeFgHiJkLmNoPqRsTuVwXyZ' + AUDIO_QS,
+      daily: AUDIO_CDN + '2aBcDeFgHiJkLmNoPqRsTuVwXyZ' + AUDIO_QS,
+      goal: 'Desarrollar la capacidad de diferenciar entre hambre física y emocional, conectando con las señales reales de tu cuerpo.',
+      practice: 'Escaneo corporal antes de cada comida. Escala de hambre del 1 al 10. Registro de sensaciones físicas vs emocionales.',
+      expect: 'Empezarás a notar la diferencia entre "tengo hambre" y "necesito calmarme". Tu cuerpo volverá a ser tu aliado, no tu enemigo.'
     },
     {
-      id: "module-3",
-      title: "El poder sobre los impulsos",
-      subtitle: "Recupera el control sin luchar",
-      image: "https://images.unsplash.com/photo-1499209974431-9ddd3e6f944a?auto=format&fit=crop&w=800&q=80",
-      audio: AUDIO_CDN + "module-3.mp3" + AUDIO_QS,
-      daily: AUDIO_CDN + "module-3-daily.mp3" + AUDIO_QS,
-      goal: "Reducir los impulsos repentinos. El objetivo no es resistirse, sino retrasar la reacción automática.",
-      practice: "Cuando aparezca un impulso fuerte, espera dos minutos antes de comer. Puedes comer después si quieres. Solo retrasarlo ya cambia el patrón cerebral.",
-      expect: "Notarás que algunos impulsos bajan solos. Esto es el cerebro recuperando control."
+      id: 'mod3',
+      title: 'Calmar la ansiedad sin comer',
+      subtitle: 'Herramientas reales para gestionar emociones',
+      image: './images/module-3.jpg',
+      audio: AUDIO_CDN + '3aBcDeFgHiJkLmNoPqRsTuVwXyZ' + AUDIO_QS,
+      daily: AUDIO_CDN + '3aBcDeFgHiJkLmNoPqRsTuVwXyZ' + AUDIO_QS,
+      goal: 'Aprender técnicas efectivas para regular la ansiedad sin recurrir a la comida como única vía de escape.',
+      practice: 'Respiración 4-7-8. Técnica de anclaje sensorial. Movimiento consciente de 5 minutos. Lista de recursos alternativos.',
+      expect: 'Descubrirás que puedes calmarte sin comer. La ansiedad dejará de ser una amenaza y se convertirá en una señal que puedes gestionar.'
     },
     {
-      id: "module-4",
-      title: "Reconectar con la saciedad",
-      subtitle: "Tu cuerpo sabe cuándo parar",
-      image: "https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=800&q=80",
-      audio: AUDIO_CDN + "module-4.mp3" + AUDIO_QS,
-      daily: AUDIO_CDN + "module-4-daily.mp3" + AUDIO_QS,
-      goal: "Reconectar con la sensación real de saciedad.",
-      practice: "Durante una comida, a mitad de plato, deja el cubierto 20 segundos y observa tu estómago y respiración.",
-      expect: "Empezarás a notar que puedes parar antes sin sentir frustración."
+      id: 'mod4',
+      title: 'Romper con la culpa',
+      subtitle: 'Libérate del ciclo de restricción y exceso',
+      image: './images/module-4.jpg',
+      audio: AUDIO_CDN + '4aBcDeFgHiJkLmNoPqRsTuVwXyZ' + AUDIO_QS,
+      daily: AUDIO_CDN + '4aBcDeFgHiJkLmNoPqRsTuVwXyZ' + AUDIO_QS,
+      goal: 'Desactivar el mecanismo de culpa que perpetúa el ciclo de restricción-atracón, cultivando la autocompasión.',
+      practice: 'Diálogo interno compasivo. Técnica de la "amiga sabia". Registro de pensamientos automáticos y reformulación.',
+      expect: 'La culpa perderá su poder sobre ti. Podrás comer sin castigarte después. El ciclo de restricción-exceso empezará a romperse.'
     },
     {
-      id: "module-5",
-      title: "Libérate de la ansiedad",
-      subtitle: "Herramientas para calmar sin comer",
-      image: "https://images.unsplash.com/photo-1515377905703-c4788e51af15?auto=format&fit=crop&w=800&q=80",
-      audio: AUDIO_CDN + "module-5.mp3" + AUDIO_QS,
-      daily: AUDIO_CDN + "module-5-daily.mp3" + AUDIO_QS,
-      goal: "Aprender a regular la ansiedad sin usar comida.",
-      practice: "Cuando haya nervios o tensión, usa la respiración lenta 4-6: cuatro segundos inhalar y seis exhalar durante un minuto antes de decidir comer.",
-      expect: "El hambre emocional pierde intensidad cuando la activación baja."
+      id: 'mod5',
+      title: 'Construir una relación sana',
+      subtitle: 'De la guerra a la paz con la comida',
+      image: './images/module-5.jpg',
+      audio: AUDIO_CDN + '5aBcDeFgHiJkLmNoPqRsTuVwXyZ' + AUDIO_QS,
+      daily: AUDIO_CDN + '5aBcDeFgHiJkLmNoPqRsTuVwXyZ' + AUDIO_QS,
+      goal: 'Transformar tu relación con la comida de una lucha constante a una experiencia de nutrición y placer equilibrados.',
+      practice: 'Comida consciente: comer sin distracciones. Práctica de gratitud hacia los alimentos. Permiso incondicional para comer.',
+      expect: 'Comer dejará de ser un campo de batalla. Podrás disfrutar de la comida sin miedo, culpa o descontrol. Sentirás paz.'
     },
     {
-      id: "module-6",
-      title: "Construye tus nuevos hábitos",
-      subtitle: "El cambio real viene de la repetición",
-      image: "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&w=800&q=80",
-      audio: AUDIO_CDN + "module-6.mp3" + AUDIO_QS,
-      daily: AUDIO_CDN + "module-6-daily.mp3" + AUDIO_QS,
-      goal: "Crear hábitos automáticos saludables.",
-      practice: "Elige una sola rutina fija, por ejemplo beber agua antes de cenar, y repítela cada día.",
-      expect: "El cambio real aparece por repetición, no por motivación."
+      id: 'mod6',
+      title: 'Gestionar emociones difíciles',
+      subtitle: 'Siente sin necesidad de escapar',
+      image: './images/module-6.jpg',
+      audio: AUDIO_CDN + '6aBcDeFgHiJkLmNoPqRsTuVwXyZ' + AUDIO_QS,
+      daily: AUDIO_CDN + '6aBcDeFgHiJkLmNoPqRsTuVwXyZ' + AUDIO_QS,
+      goal: 'Desarrollar la capacidad de estar presente con emociones difíciles sin necesidad de evadirlas con comida.',
+      practice: 'Técnica RAIN (Reconocer, Aceptar, Investigar, Nutrir). Escritura emocional. Validación de emociones.',
+      expect: 'Las emociones difíciles dejarán de asustarte. Podrás sentir tristeza, soledad o frustración sin necesidad de "taparlas" comiendo.'
     },
     {
-      id: "module-7",
-      title: "Tu nueva vida sin depender de la app",
-      subtitle: "La libertad que mereces",
-      image: "https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?auto=format&fit=crop&w=800&q=80",
-      audio: AUDIO_CDN + "module-7.mp3" + AUDIO_QS,
-      daily: AUDIO_CDN + "module-7-daily.mp3" + AUDIO_QS,
-      goal: "Mantener los cambios sin depender de la app.",
-      practice: "Usa los audios solo cuando lo necesites, no por obligación. La meta es autonomía.",
-      expect: "Comerás más por elección que por impulso."
+      id: 'mod7',
+      title: 'Mantener el cambio',
+      subtitle: 'Integra lo aprendido en tu vida real',
+      image: './images/module-7.jpg',
+      audio: AUDIO_CDN + '7aBcDeFgHiJkLmNoPqRsTuVwXyZ' + AUDIO_QS,
+      daily: AUDIO_CDN + '7aBcDeFgHiJkLmNoPqRsTuVwXyZ' + AUDIO_QS,
+      goal: 'Consolidar los cambios y crear un plan sostenible para mantener tu nueva relación con la comida a largo plazo.',
+      practice: 'Plan de prevención de recaídas. Red de apoyo. Rituales de autocuidado. Revisión semanal de progreso.',
+      expect: 'Tendrás herramientas para toda la vida. Los momentos difíciles seguirán apareciendo, pero sabrás cómo gestionarlos sin volver atrás.'
     }
   ],
 
   audios: [
-    { id: "intro",  title: "Bienvenida al programa",          category: "Inicio",    duration: "5 min",  image: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&w=200&q=80", file: AUDIO_CDN + "intro-curso.mp3" + AUDIO_QS },
-    { id: "m1",     title: "Calma al comenzar · Sesión",      category: "Módulo 1",  duration: "12 min", image: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&w=200&q=80", file: AUDIO_CDN + "module-1.mp3" + AUDIO_QS },
-    { id: "m1d",    title: "Calma al comenzar · Práctica",    category: "Módulo 1",  duration: "5 min",  image: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&w=200&q=80", file: AUDIO_CDN + "module-1-daily.mp3" + AUDIO_QS },
-    { id: "m2",     title: "Hambre emocional · Sesión",       category: "Módulo 2",  duration: "14 min", image: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=200&q=80", file: AUDIO_CDN + "module-2.mp3" + AUDIO_QS },
-    { id: "m2d",    title: "Hambre emocional · Práctica",     category: "Módulo 2",  duration: "5 min",  image: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=200&q=80", file: AUDIO_CDN + "module-2-daily.mp3" + AUDIO_QS },
-    { id: "m3",     title: "Impulsos · Sesión",               category: "Módulo 3",  duration: "13 min", image: "https://images.unsplash.com/photo-1499209974431-9ddd3e6f944a?auto=format&fit=crop&w=200&q=80", file: AUDIO_CDN + "module-3.mp3" + AUDIO_QS },
-    { id: "m3d",    title: "Impulsos · Práctica",             category: "Módulo 3",  duration: "5 min",  image: "https://images.unsplash.com/photo-1499209974431-9ddd3e6f944a?auto=format&fit=crop&w=200&q=80", file: AUDIO_CDN + "module-3-daily.mp3" + AUDIO_QS },
-    { id: "m4",     title: "Saciedad · Sesión",               category: "Módulo 4",  duration: "12 min", image: "https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=200&q=80", file: AUDIO_CDN + "module-4.mp3" + AUDIO_QS },
-    { id: "m4d",    title: "Saciedad · Práctica",             category: "Módulo 4",  duration: "5 min",  image: "https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=200&q=80", file: AUDIO_CDN + "module-4-daily.mp3" + AUDIO_QS },
-    { id: "m5",     title: "Ansiedad · Sesión",               category: "Módulo 5",  duration: "15 min", image: "https://images.unsplash.com/photo-1515377905703-c4788e51af15?auto=format&fit=crop&w=200&q=80", file: AUDIO_CDN + "module-5.mp3" + AUDIO_QS },
-    { id: "m5d",    title: "Ansiedad · Práctica",             category: "Módulo 5",  duration: "5 min",  image: "https://images.unsplash.com/photo-1515377905703-c4788e51af15?auto=format&fit=crop&w=200&q=80", file: AUDIO_CDN + "module-5-daily.mp3" + AUDIO_QS },
-    { id: "m6",     title: "Hábitos · Sesión",                category: "Módulo 6",  duration: "13 min", image: "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&w=200&q=80", file: AUDIO_CDN + "module-6.mp3" + AUDIO_QS },
-    { id: "m6d",    title: "Hábitos · Práctica",              category: "Módulo 6",  duration: "5 min",  image: "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&w=200&q=80", file: AUDIO_CDN + "module-6-daily.mp3" + AUDIO_QS },
-    { id: "m7",     title: "Mantenimiento · Sesión",          category: "Módulo 7",  duration: "14 min", image: "https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?auto=format&fit=crop&w=200&q=80", file: AUDIO_CDN + "module-7.mp3" + AUDIO_QS },
-    { id: "m7d",    title: "Mantenimiento · Práctica",        category: "Módulo 7",  duration: "5 min",  image: "https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?auto=format&fit=crop&w=200&q=80", file: AUDIO_CDN + "module-7-daily.mp3" + AUDIO_QS },
-    { id: "cierre", title: "Cierre · Tu nueva libertad",      category: "Final",     duration: "8 min",  image: "https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?auto=format&fit=crop&w=200&q=80", file: AUDIO_CDN + "cierre-mantenimiento.mp3" + AUDIO_QS }
+    {
+      id: 'intro',
+      title: 'Bienvenida a tu proceso',
+      category: 'INICIO',
+      duration: '8 min',
+      file: AUDIO_CDN + 'intro-curso' + AUDIO_QS
+    },
+    {
+      id: 'cierre',
+      title: 'Cierre y mantenimiento',
+      category: 'CIERRE',
+      duration: '12 min',
+      file: AUDIO_CDN + 'cierre-mantenimiento' + AUDIO_QS
+    }
   ]
 };
-
-var APP_DATA = window.APP_DATA;
