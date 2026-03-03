@@ -1,10 +1,9 @@
-/* CalmaComida app.js — versión estable */
-
+/* CalmaComida app.js — PRIME (estable + acabado visual) */
 (function () {
   var screen = document.getElementById("screen");
   var btnReset = document.getElementById("btnReset");
 
-  var STORAGE_KEY = "calmacomida_state_v3";
+  var STORAGE_KEY = "calmacomida_state_v4_prime";
   var state = { done: {}, lastTab: "home" };
 
   function loadState() {
@@ -24,7 +23,8 @@
   }
 
   function stats() {
-    var total = (window.APP_DATA && window.APP_DATA.modules) ? window.APP_DATA.modules.length : 0;
+    var mods = (window.APP_DATA && window.APP_DATA.modules) ? window.APP_DATA.modules : [];
+    var total = mods.length;
     var done = 0;
     for (var k in (state.done || {})) if (state.done[k]) done++;
     var pct = total ? Math.round((done / total) * 100) : 0;
@@ -41,6 +41,12 @@
     }
     render(tab);
     window.scrollTo(0, 0);
+  }
+
+  function findAudio(id) {
+    var list = (window.APP_DATA && window.APP_DATA.audios) ? window.APP_DATA.audios : [];
+    for (var i = 0; i < list.length; i++) if (list[i].id === id) return list[i];
+    return null;
   }
 
   function render(tab) {
@@ -62,59 +68,100 @@
     var intro = findAudio("intro");
     var cierre = findAudio("cierre");
 
+    var heroImg = "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=1600&q=70";
+
     screen.innerHTML =
-      '<section class="card">' +
-        '<h2 class="h2">Cómo usar CalmaComida</h2>' +
-        '<p class="p">Sigue este orden para que funcione sin esfuerzo:</p>' +
+      '<section class="hero">' +
+        '<img class="heroImg" src="' + heroImg + '" alt="" />' +
+        '<div class="heroContent">' +
+          '<h2 class="heroTitle">Calma, claridad y elección</h2>' +
+          '<p class="heroText">Usa la Introducción una vez, y luego cada módulo con su práctica diaria. No es fuerza de voluntad: es reentrenar tu sistema nervioso.</p>' +
+        '</div>' +
+      '</section>' +
+
+      '<section class="card" style="margin-top:16px">' +
+        '<h2 class="h2">Empieza por aquí</h2>' +
+        '<p class="p">1) Escucha la Introducción. 2) Haz los módulos. 3) Repite prácticas diarias cuando lo necesites.</p>' +
 
         '<div class="list">' +
-          audioCard(intro, "1) Empieza por la Introducción (una vez).") +
-          '<div class="item" onclick="window.__goModules()">' +
-            '<div style="flex:1">' +
-              '<div class="itemTitle">2) Haz los 7 módulos</div>' +
-              '<div class="p" style="font-size:12px;margin-top:4px">En cada módulo: escucha la sesión principal y luego usa la práctica diaria durante la semana.</div>' +
-            '</div><div>📚</div>' +
-          '</div>' +
-          '<div class="item" onclick="window.__goAudios()">' +
-            '<div style="flex:1">' +
-              '<div class="itemTitle">3) Si tienes un impulso, ve a “Audios”</div>' +
-              '<div class="p" style="font-size:12px;margin-top:4px">Ahí tienes Introducción, prácticas diarias y cierre. Úsalos cuando lo necesites.</div>' +
-            '</div><div>🆘</div>' +
-          '</div>' +
-          audioCard(cierre, "4) Al final escucha el Cierre/Mantenimiento.") +
+          itemPlay(intro, "Introducción (una vez)") +
+          itemNav("Ir a Módulos", "Tus 7 módulos con 2 audios cada uno", "modules") +
+          itemNav("Ir a Audios", "Introducción, prácticas y cierre", "audio") +
+          itemPlay(cierre, "Cierre y mantenimiento") +
         '</div>' +
 
         '<div style="margin-top:14px">' +
           '<div class="progress-container"><div class="progress-bar" style="width:' + s.pct + '%"></div></div>' +
-          '<p class="p" style="margin-top:10px">Progreso: <b>' + s.done + '/' + s.total + '</b> módulos (' + s.pct + '%)</p>' +
+          '<p class="p" style="margin-top:10px"><b>Progreso:</b> ' + s.done + '/' + s.total + ' módulos (' + s.pct + '%)</p>' +
         '</div>' +
+
+        '<audio id="globalPlayer" controls preload="metadata"></audio>' +
       '</section>';
 
-    window.__goModules = function(){ setActiveTab("modules"); };
-    window.__goAudios  = function(){ setActiveTab("audio"); };
-    window.__play = function(file){
-      var a = document.getElementById("homePlayer");
-      if (!a) return;
-      a.src = file;
-      a.play && a.play();
+    window.__playGlobal = function (file) {
+      if (!file) return;
+      var p = document.getElementById("globalPlayer");
+      if (!p) return;
+      p.src = file;
+      p.play && p.play();
+      p.scrollIntoView({ behavior: "smooth", block: "start" });
     };
+
+    window.__go = function (tab) { setActiveTab(tab); };
+  }
+
+  function itemPlay(a, hint) {
+    if (!a) return (
+      '<div class="item" style="opacity:.6; cursor:default">' +
+        '<div style="flex:1">' +
+          '<div class="itemTitle">' + esc(hint || "Audio") + '</div>' +
+          '<div class="itemSub">No encontrado en data.js</div>' +
+        '</div>' +
+        '<div class="badge">—</div>' +
+      '</div>'
+    );
+    return (
+      '<div class="item" onclick="window.__playGlobal(\'' + esc(a.file) + '\')">' +
+        '<div style="flex:1">' +
+          '<div class="itemTitle">' + esc(hint || a.title) + '</div>' +
+          '<div class="itemSub">' + esc(a.title) + '</div>' +
+        '</div>' +
+        '<div class="badge">▶ Reproducir</div>' +
+      '</div>'
+    );
+  }
+
+  function itemNav(title, sub, tab) {
+    return (
+      '<div class="item" onclick="window.__go(\'' + esc(tab) + '\')">' +
+        '<div style="flex:1">' +
+          '<div class="itemTitle">' + esc(title) + '</div>' +
+          '<div class="itemSub">' + esc(sub || "") + '</div>' +
+        '</div>' +
+        '<div class="badge">Abrir</div>' +
+      '</div>'
+    );
   }
 
   function renderModules() {
     var mods = window.APP_DATA.modules || [];
-    var html = '<section class="card"><h2 class="h2">Módulos</h2><p class="p">Entra en un módulo para ver: objetivo, cómo practicar y los 2 audios.</p><div class="list">';
+    var html =
+      '<section class="card">' +
+        '<h2 class="h2">Módulos</h2>' +
+        '<p class="p">Cada módulo tiene <b>audio principal</b> + <b>práctica diaria</b>.</p>' +
+        '<div class="list">';
 
     for (var i = 0; i < mods.length; i++) {
       var m = mods[i];
       var done = !!(state.done && state.done[m.id]);
       html +=
         '<div class="item" onclick="window.__openModule(\'' + esc(m.id) + '\')">' +
-          '<img class="audioThumb" src="' + esc(m.image || "") + '" style="width:64px;height:64px" />' +
+          '<img class="audioThumb" src="' + esc(m.image || "") + '" onerror="this.style.display=\'none\'" alt="" />' +
           '<div style="flex:1">' +
             '<div class="itemTitle">' + esc(m.title) + '</div>' +
-            '<div class="p" style="font-size:12px;margin-top:4px">' + esc(m.goal || "") + '</div>' +
+            '<div class="itemSub">' + esc(m.goal || "") + '</div>' +
           '</div>' +
-          '<div style="font-size:20px">' + (done ? "✅" : "⚪") + '</div>' +
+          '<div class="badge ' + (done ? "done" : "") + '">' + (done ? "Hecho" : "Pendiente") + '</div>' +
         '</div>';
     }
 
@@ -132,25 +179,31 @@
     screen.innerHTML =
       '<section class="card">' +
         '<button class="chip" onclick="window.__backMods()">← Volver</button>' +
-        '<img src="' + esc(m.image || "") + '" style="width:100%;height:180px;object-fit:cover;border-radius:14px;margin:12px 0" />' +
-        '<h2 class="h2">' + esc(m.title) + '</h2>' +
+
+        '<div style="margin-top:12px">' +
+          '<img src="' + esc(m.image || "") + '" onerror="this.style.display=\'none\'" style="width:100%;height:190px;object-fit:cover;border-radius:16px;border:1px solid rgba(0,0,0,.06)" alt="" />' +
+        '</div>' +
+
+        '<h2 class="h2" style="margin-top:14px">' + esc(m.title) + '</h2>' +
 
         (m.goal ? '<p class="p"><b>Objetivo:</b> ' + esc(m.goal) + '</p>' : '') +
-        (m.practice ? '<p class="p" style="margin-top:10px"><b>Cómo usar la práctica diaria:</b> ' + esc(m.practice) + '</p>' : '') +
-        (m.expect ? '<p class="p" style="margin-top:10px"><b>Qué puedes esperar:</b> ' + esc(m.expect) + '</p>' : '') +
+        (m.practice ? '<p class="p" style="margin-top:10px"><b>Cómo practicar:</b> ' + esc(m.practice) + '</p>' : '') +
+        (m.expect ? '<p class="p" style="margin-top:10px"><b>Qué esperar:</b> ' + esc(m.expect) + '</p>' : '') +
 
-        '<div style="margin-top:16px; background:#fdf6ee; border:1px solid #eadfd6; padding:14px; border-radius:14px">' +
-          '<div style="font-weight:900;color:var(--brand);margin-bottom:8px">🎧 Audio del módulo</div>' +
-          '<audio controls preload="metadata" src="' + esc(m.audio || "") + '" style="width:100%"></audio>' +
+        '<div class="card" style="margin-top:14px; background:var(--soft)">' +
+          '<div class="itemTitle">🎧 Audio principal</div>' +
+          '<audio controls preload="metadata" src="' + esc(m.audio || "") + '"></audio>' +
         '</div>' +
 
-        '<div style="margin-top:12px; background:#fdf6ee; border:1px solid #eadfd6; padding:14px; border-radius:14px">' +
-          '<div style="font-weight:900;color:var(--brand);margin-bottom:8px">🧘 Práctica diaria</div>' +
-          '<div class="p" style="font-size:12px;margin-bottom:8px">Úsala 1 vez al día (o antes de una comida) durante la semana del módulo.</div>' +
-          '<audio controls preload="metadata" src="' + esc(m.daily || "") + '" style="width:100%"></audio>' +
+        '<div class="card" style="margin-top:12px; background:var(--soft)">' +
+          '<div class="itemTitle">🧘 Práctica diaria</div>' +
+          '<div class="itemSub">Úsala 1 vez al día (o antes de una comida) durante la semana.</div>' +
+          '<audio controls preload="metadata" src="' + esc(m.daily || "") + '"></audio>' +
         '</div>' +
 
-        '<button class="btn" id="btnDone" style="margin-top:16px">' + (done ? "✅ Módulo completado" : "Marcar módulo como hecho") + '</button>' +
+        '<button class="btn" id="btnDone" style="margin-top:14px">' +
+          (done ? "✅ Módulo completado (toca para desmarcar)" : "Marcar módulo como hecho") +
+        '</button>' +
       '</section>';
 
     window.__backMods = function(){ setActiveTab("modules"); };
@@ -169,7 +222,7 @@
     var html =
       '<section class="card">' +
         '<h2 class="h2">Audios</h2>' +
-        '<p class="p">Aquí tienes la introducción, todos los módulos (sesión y práctica) y el cierre. Si estás en un momento difícil, usa una “práctica diaria”.</p>' +
+        '<p class="p">Toca un audio para reproducirlo. Recomendación: si estás nerviosa/o, usa una <b>práctica diaria</b>.</p>' +
         '<div class="list">';
 
     for (var i = 0; i < list.length; i++) {
@@ -178,72 +231,50 @@
         '<div class="item" onclick="window.__playAudio(\'' + esc(a.file) + '\', \'' + esc(a.title) + '\')">' +
           '<div style="flex:1">' +
             '<div class="itemTitle">' + esc(a.title) + '</div>' +
-            '<div class="p" style="font-size:12px;margin-top:4px">Toca para reproducir.</div>' +
+            '<div class="itemSub">Toca para reproducir</div>' +
           '</div>' +
-          '<div style="background:var(--brand);color:white;width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center">▶</div>' +
+          '<div class="badge">▶</div>' +
         '</div>';
     }
 
     html +=
         '</div>' +
-        '<div id="audioBox" style="display:none; margin-top:14px; background:#fdf6ee; border:1px solid #eadfd6; padding:14px; border-radius:14px">' +
-          '<div id="audioTitle" style="font-weight:900;color:var(--brand)"></div>' +
-          '<audio id="audioPlayer" controls preload="metadata" style="width:100%;margin-top:10px"></audio>' +
+        '<div class="card" style="margin-top:14px; background:var(--soft)">' +
+          '<div class="itemTitle" id="audioTitle">Reproductor</div>' +
+          '<audio id="audioPlayer" controls preload="metadata"></audio>' +
         '</div>' +
       '</section>';
 
     screen.innerHTML = html;
 
     window.__playAudio = function (file, title) {
-      var box = document.getElementById("audioBox");
       var t = document.getElementById("audioTitle");
       var p = document.getElementById("audioPlayer");
-      t.textContent = title;
-      box.style.display = "block";
+      t.textContent = title || "Reproductor";
       p.src = file;
       p.play && p.play();
-      box.scrollIntoView({ behavior: "smooth", block: "start" });
+      p.scrollIntoView({ behavior: "smooth", block: "start" });
     };
   }
 
   function renderProgress() {
     var s = stats();
     screen.innerHTML =
-      '<section class="card" style="padding:0; overflow:hidden">' +
-        '<img src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=1400&q=70" style="width:100%;height:180px;object-fit:cover" />' +
-        '<div style="padding:18px 18px 20px; text-align:center">' +
-          '<div style="font-size:54px">🌱</div>' +
-          '<h2 class="h2">Tu Transformación</h2>' +
-          '<div class="progress-container" style="margin-top:14px"><div class="progress-bar" style="width:' + s.pct + '%"></div></div>' +
-          '<p class="p" style="margin-top:10px">Has completado <b>' + s.done + '/' + s.total + '</b> módulos (' + s.pct + '%)</p>' +
+      '<section class="card">' +
+        '<h2 class="h2">Tu transformación</h2>' +
+        '<p class="p">Pequeños pasos, repetidos. Eso cambia el patrón.</p>' +
+        '<div style="margin-top:14px">' +
+          '<div class="progress-container"><div class="progress-bar" style="width:' + s.pct + '%"></div></div>' +
+          '<p class="p" style="margin-top:10px"><b>' + s.done + '/' + s.total + '</b> módulos (' + s.pct + '%)</p>' +
         '</div>' +
       '</section>';
-  }
-
-  function findAudio(id) {
-    var list = (window.APP_DATA && window.APP_DATA.audios) ? window.APP_DATA.audios : [];
-    for (var i = 0; i < list.length; i++) if (list[i].id === id) return list[i];
-    return null;
-  }
-
-  function audioCard(a, hint) {
-    if (!a) return "";
-    return '' +
-      '<div class="item" onclick="window.__play(\'' + esc(a.file) + '\')">' +
-        '<div style="flex:1">' +
-          '<div class="itemTitle">' + esc(a.title) + '</div>' +
-          '<div class="p" style="font-size:12px;margin-top:4px">' + esc(hint || "") + '</div>' +
-        '</div>' +
-        '<div style="background:var(--brand);color:white;width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center">▶</div>' +
-      '</div>' +
-      '<audio id="homePlayer" controls preload="metadata" style="width:100%;margin-top:10px"></audio>';
   }
 
   function wireReset() {
     if (!btnReset) return;
     btnReset.onclick = function () {
       if (confirm("¿Reiniciar progreso?")) {
-        localStorage.removeItem(STORAGE_KEY);
+        try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
         state = { done: {}, lastTab: "home" };
         setActiveTab("home");
       }
@@ -254,16 +285,23 @@
     var tabs = document.querySelectorAll(".tab");
     for (var i = 0; i < tabs.length; i++) {
       (function (btn) {
-        btn.onclick = function () {
-          setActiveTab(btn.getAttribute("data-tab"));
-        };
+        btn.onclick = function () { setActiveTab(btn.getAttribute("data-tab")); };
       })(tabs[i]);
     }
+  }
+
+  function registerSW() {
+    try {
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.register("./service-worker.js");
+      }
+    } catch (e) {}
   }
 
   // Init
   loadState();
   wireReset();
   wireTabs();
+  registerSW();
   setActiveTab(state.lastTab || "home");
 })();
