@@ -378,20 +378,33 @@ function renderProgress() {
     </div>
 
     <div class="card" style="text-align:center">
-      <button class="btn ghost" onclick="if(confirm('¿Segura que quieres reiniciar tu progreso?')) { state.done={}; state.programStarted=false; save(); renderProgress(); }">
-        Reiniciar progreso
-      </button>
+      <button class="btn ghost" onclick="resetProgress()">
+  Reiniciar mi viaje
+</button>
     </div>
   `;
 }
+window.resetProgress = function () {
+  const confirmReset = confirm(
+    "¿Estás segura de que quieres reiniciar tu proceso?\n\n" +
+    "Esto borrará TODO tu progreso:\n" +
+    "✔ Módulos completados\n" +
+    "✔ Tu avance del programa\n" +
+    "✔ Tu estado actual\n\n" +
+    "No podrás deshacer esta acción."
+  );
 
-// ─── RESET ──────────────────────────────────────────────
-$("#btnReset").onclick = () => {
-  if (confirm("¿Reiniciar toda la app?")) {
-    localStorage.removeItem(STORAGE_KEY);
-    location.reload();
-  }
+  if (!confirmReset) return;
+
+  // Reseteo completo
+  state.done = {};
+  state.programStarted = false;
+  save();
+
+  alert("Tu proceso ha sido reiniciado. Puedes comenzar de nuevo cuando quieras.");
+  renderProgress();
 };
+// ─── RESET ──────────────────────────────────────────────
 
 // ─── INIT ───────────────────────────────────────────────
 document.querySelectorAll(".tab").forEach(t => t.onclick = () => setActiveTab(t.dataset.tab));
