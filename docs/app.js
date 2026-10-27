@@ -27,6 +27,355 @@ function save() {
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch {}
 }
 
+function esc(text) {
+  return String(text ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+
+// Pantalla actual, para volver a pintarla cuando cambia la sesión o el acceso
+let currentView = () => render(state.lastTab || "home");
+
+// ─── CUENTA Y ACCESO ────────────────────────────────────
+// Si la librería no carga (p. ej. sin conexión), la parte gratuita sigue funcionando
+const sb = window.supabase ? window.supabase.createClient(APP_DATA.supabaseUrl, APP_DATA.supabaseKey) : null;
+let session = null;
+let hasAccess = false;
+
+async function refreshAccess() {
+  if (!sb) return;
+  const { data } = await sb.auth.getSession();
+  session = data.session;
+  if (!session) { hasAccess = false; return; }
+  const { data: access, error } = await sb.rpc("has_access");
+  hasAccess = !error && access === true;
+}
+
+// Módulo 1: gratis dejando el email (test) o con cuenta. El resto: programa completo.
+function isUnlocked(m) {
+  if (m.free) return !!(state.leadEmail || session);
+  return hasAccess;
+}
+
+// Las rutas "premium/..." viven en el almacenamiento privado y necesitan un enlace firmado
+const signedUrls = {};
+async function resolveAudio(path) {
+  if (!path.startsWith("premium/")) return path;
+  if (!sb || !hasAccess) return null;
+  const file = path.slice("premium/".length);
+  const cached = signedUrls[file];
+  if (cached && cached.expires > Date.now()) return cached.url;
+  const { data, error } = await sb.storage.from("premium").createSignedUrl(file, 3600);
+  if (error) { console.error("Audio privado:", error); return null; }
+  signedUrls[file] = { url: data.signedUrl, expires: Date.now() + 50 * 60 * 1000 };
+  return data.signedUrl;
+}
+
+// Rellena los <audio data-audio="..."> de la pantalla actual
+function hydrateAudios() {
+  document.querySelectorAll("audio[data-audio]").forEach(async el => {
+    const url = await resolveAudio(el.dataset.audio);
+    if (url) el.src = url;
+    else el.insertAdjacentHTML("afterend", `<p class="audio-hint">No se pudo cargar el audio. Revisa tu conexión.</p>`);
+  });
+}
+
+window.goToPayment = function() {
+  if (!session) return renderAccount("signup", true);
+  if (!APP_DATA.paymentLink) {
+    alert("El pago todavía no está activado. Vuelve a intentarlo en unos días.");
+    return;
+  }
+  const url = new URL(APP_DATA.paymentLink);
+  url.searchParams.set("client_reference_id", session.user.id);
+  window.location.href = url.toString();
+};
+
+window.logout = async function() {
+  if (sb) await sb.auth.signOut();
+  session = null;
+  hasAccess = false;
+  setActiveTab("progress");
+};
+
+function paywallCard(intro) {
+  return `
+    <div class="card paywall-card">
+      <div class="paywall-lock">🔒</div>
+      <h3>${intro}</h3>
+      <ul class="paywall-list">
+        <li>Los 7 módulos con sus sesiones principales</li>
+        <li>Todas las prácticas diarias de 5 minutos</li>
+        <li>La sesión final de cierre y mantenimiento</li>
+        <li>Acceso para siempre, en cualquier dispositivo</li>
+      </ul>
+      <button class="btn" onclick="goToPayment()">Desbloquear por ${APP_DATA.price}</button>
+      <p class="paywall-note">Pago único y seguro con tarjeta. Sin suscripciones.</p>
+      ${session ? "" : `<button class="chip" onclick="renderAccount('login')">Ya lo compré: entrar</button>`}
+    </div>
+  `;
+}
+
+// ─── PANTALLA DE CUENTA ─────────────────────────────────
+window.renderAccount = function(mode = "signup", thenPay = false) {
+  currentView = () => renderAccount(mode, thenPay);
+  highlightTab("progress");
+  window.scrollTo(0, 0);
+  const isSignup = mode === "signup";
+
+  screen.innerHTML = `
+    <div class="card">
+      <button class="back-btn" onclick="setActiveTab('progress')">← Volver</button>
+      <h2>${isSignup ? "Crea tu cuenta" : "Entra en tu cuenta"}</h2>
+      <p class="audio-hint">${isSignup
+        ? "Con tu cuenta, tu compra queda guardada y puedes escuchar el programa en cualquier móvil."
+        : "Usa el email y la contraseña con los que te registraste."}</p>
+      <form id="accountForm" class="account-form" novalidate>
+        <label>Email
+          <input type="email" id="accEmail" autocomplete="email" required value="${esc(state.leadEmail || "")}">
+        </label>
+        <label>Contraseña
+          <input type="password" id="accPass" autocomplete="${isSignup ? "new-password" : "current-password"}" minlength="6" required>
+        </label>
+        ${isSignup ? `<p class="audio-hint">Mínimo 6 caracteres.</p>` : ""}
+        <p class="form-error" id="accError"></p>
+        <button class="btn" type="submit" id="accSubmit">${isSignup ? (thenPay ? "Crear cuenta y continuar al pago" : "Crear cuenta") : "Entrar"}</button>
+      </form>
+      <button class="chip" style="margin-top:14px" onclick="renderAccount('${isSignup ? "login" : "signup"}', ${thenPay})">
+        ${isSignup ? "Ya tengo cuenta: entrar" : "No tengo cuenta: crearla"}
+      </button>
+      ${!isSignup && APP_DATA.supportEmail ? `<p class="audio-hint" style="margin-top:12px">¿Has olvidado tu contraseña? Escríbenos a ${esc(APP_DATA.supportEmail)}</p>` : ""}
+    </div>
+  `;
+
+  $("#accountForm").onsubmit = async (e) => {
+    e.preventDefault();
+    const email = $("#accEmail").value.trim();
+    const password = $("#accPass").value;
+    const errorEl = $("#accError");
+    errorEl.textContent = "";
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) { errorEl.textContent = "Escribe un email válido."; return; }
+    if (password.length < 6) { errorEl.textContent = "La contraseña necesita al menos 6 caracteres."; return; }
+    if (!sb) { errorEl.textContent = "No hay conexión. Inténtalo de nuevo en un momento."; return; }
+
+    const button = $("#accSubmit");
+    button.disabled = true;
+    button.textContent = "Un momento…";
+
+    const { data, error } = isSignup
+      ? await sb.auth.signUp({ email, password })
+      : await sb.auth.signInWithPassword({ email, password });
+
+    if (error) {
+      button.disabled = false;
+      button.textContent = isSignup ? "Crear cuenta" : "Entrar";
+      errorEl.textContent = authErrorText(error);
+      return;
+    }
+
+    if (isSignup && !data.session) {
+      screen.innerHTML = `
+        <div class="card" style="text-align:center">
+          <div style="font-size:48px; margin:10px 0">📩</div>
+          <h3>Revisa tu email</h3>
+          <p>Te hemos enviado un enlace para confirmar tu cuenta. Después vuelve aquí y entra con tu email y contraseña.</p>
+          <button class="btn ghost" onclick="renderAccount('login', ${thenPay})">Ya lo he confirmado: entrar</button>
+        </div>
+      `;
+      return;
+    }
+
+    await refreshAccess();
+    if (thenPay && !hasAccess) return goToPayment();
+    setActiveTab("progress");
+  };
+};
+
+function authErrorText(error) {
+  const msg = (error.message || "").toLowerCase();
+  if (msg.includes("already registered")) return "Ese email ya tiene cuenta. Pulsa «Ya tengo cuenta: entrar».";
+  if (msg.includes("invalid login")) return "Email o contraseña incorrectos.";
+  if (msg.includes("email not confirmed")) return "Confirma tu email con el enlace que te enviamos y vuelve a intentarlo.";
+  if (msg.includes("rate limit")) return "Demasiados intentos seguidos. Espera unos minutos.";
+  return "No se pudo completar. Inténtalo de nuevo.";
+}
+
+// ─── VUELTA DESDE EL PAGO ───────────────────────────────
+// Stripe vuelve a la app con ?pago=ok. El desbloqueo llega unos segundos después (aviso de Stripe al servidor).
+async function handlePaymentReturn() {
+  const params = new URLSearchParams(location.search);
+  if (params.get("pago") !== "ok") return false;
+  history.replaceState(null, "", location.pathname);
+
+  screen.innerHTML = `
+    <div class="card" style="text-align:center">
+      <div style="font-size:48px; margin:10px 0">⏳</div>
+      <h3>Confirmando tu pago…</h3>
+      <p>Esto tarda solo unos segundos.</p>
+    </div>
+  `;
+
+  for (let i = 0; i < 15 && !hasAccess; i++) {
+    await new Promise(r => setTimeout(r, 2000));
+    await refreshAccess();
+  }
+
+  screen.innerHTML = hasAccess ? `
+    <div class="card" style="text-align:center">
+      <div style="font-size:56px; margin:10px 0">🌸</div>
+      <h2>¡Bienvenida al programa completo!</h2>
+      <p>Ya tienes acceso a los 7 módulos y a la sesión de cierre, en cualquier dispositivo donde entres con tu cuenta.</p>
+      <button class="btn" onclick="setActiveTab('modules')">Ir a mis módulos</button>
+    </div>
+  ` : `
+    <div class="card" style="text-align:center">
+      <div style="font-size:48px; margin:10px 0">🕐</div>
+      <h3>Tu pago se está procesando</h3>
+      <p>Si en unos minutos no ves los módulos desbloqueados, cierra la app y vuelve a abrirla.${APP_DATA.supportEmail ? ` Si sigue igual, escríbenos a ${esc(APP_DATA.supportEmail)}.` : ""}</p>
+      <button class="btn ghost" onclick="setActiveTab('modules')">Ir a mis módulos</button>
+    </div>
+  `;
+  return true;
+}
+
+// ─── TEST DE HAMBRE EMOCIONAL ───────────────────────────
+let quizAnswers = [];
+
+window.startQuiz = function() {
+  quizAnswers = [];
+  renderQuizStep();
+};
+
+function renderQuizStep() {
+  const step = quizAnswers.length;
+  const questions = APP_DATA.quiz.questions;
+  if (step >= questions.length) return renderQuizResult(quizResultType());
+
+  currentView = renderQuizStep;
+  window.scrollTo(0, 0);
+  const q = questions[step];
+  screen.innerHTML = `
+    <div class="card quiz-card">
+      <button class="back-btn" onclick="${step === 0 ? "setActiveTab('home')" : "quizBack()"}">← ${step === 0 ? "Salir" : "Atrás"}</button>
+      <div class="quiz-step">Pregunta ${step + 1} de ${questions.length}</div>
+      <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:${Math.round(step / questions.length * 100)}%"></div></div>
+      <h2 class="quiz-question">${q.text}</h2>
+      ${q.options.map((o, i) => `<button class="quiz-option" onclick="quizAnswer(${i})">${o.text}</button>`).join("")}
+    </div>
+  `;
+}
+
+window.quizAnswer = function(i) {
+  quizAnswers.push(i);
+  renderQuizStep();
+};
+
+window.quizBack = function() {
+  quizAnswers.pop();
+  renderQuizStep();
+};
+
+function quizResultType() {
+  const questions = APP_DATA.quiz.questions;
+  const score = {};
+  quizAnswers.forEach((a, i) => {
+    const type = questions[i].options[a].type;
+    score[type] = (score[type] || 0) + 1;
+  });
+  const firstType = questions[0].options[quizAnswers[0]].type;
+  return Object.keys(score).reduce((best, t) => score[t] > score[best] ? t : best, firstType);
+}
+
+function renderQuizResult(type) {
+  currentView = () => renderQuizResult(type);
+  window.scrollTo(0, 0);
+  const r = APP_DATA.quiz.results[type];
+
+  screen.innerHTML = `
+    <div class="card quiz-card">
+      <div class="quiz-step">Tu tipo de hambre emocional</div>
+      <div class="quiz-result-icon">${r.icon}</div>
+      <h2>${r.name}</h2>
+      <p>${r.short}</p>
+      <div class="quiz-locked">🔒 Por qué te pasa y tu plan de 7 días</div>
+    </div>
+
+    <div class="card">
+      <h3>Recibe tu plan completo, gratis</h3>
+      <ul class="paywall-list">
+        <li>Tu resultado explicado a fondo</li>
+        <li>7 días de pequeños retos para practicar</li>
+        <li>El Módulo 1 desbloqueado en la app</li>
+      </ul>
+      <form id="leadForm" class="account-form" novalidate>
+        <label>Tu email
+          <input type="email" id="leadEmail" autocomplete="email" placeholder="tu@email.com" required>
+        </label>
+        <label class="consent">
+          <input type="checkbox" id="leadConsent">
+          <span>Quiero recibir el plan de 7 días y otros emails de CalmaComida (máximo uno al día). Puedo darme de baja cuando quiera. <a href="privacidad.html" target="_blank">Privacidad</a></span>
+        </label>
+        <p class="form-error" id="leadError"></p>
+        <button class="btn" type="submit" id="leadSubmit">Ver mi resultado y desbloquear el Módulo 1</button>
+      </form>
+    </div>
+  `;
+
+  $("#leadForm").onsubmit = async (e) => {
+    e.preventDefault();
+    const email = $("#leadEmail").value.trim();
+    const consent = $("#leadConsent").checked;
+    const errorEl = $("#leadError");
+    errorEl.textContent = "";
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) { errorEl.textContent = "Escribe un email válido."; return; }
+
+    const button = $("#leadSubmit");
+    button.disabled = true;
+    button.textContent = "Un momento…";
+
+    try {
+      const res = await fetch(`${APP_DATA.supabaseUrl}/functions/v1/subscribe-lead`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "apikey": APP_DATA.supabaseKey },
+        body: JSON.stringify({ email, quizType: type, answers: quizAnswers, consent })
+      });
+      if (!res.ok) throw new Error(await res.text());
+    } catch (err) {
+      console.error("No se pudo guardar el email:", err);
+      button.disabled = false;
+      button.textContent = "Ver mi resultado y desbloquear el Módulo 1";
+      errorEl.textContent = "No se pudo enviar. Revisa tu conexión e inténtalo de nuevo.";
+      return;
+    }
+
+    state.leadEmail = email;
+    state.quizType = type;
+    save();
+    renderQuizFull(type, consent);
+  };
+}
+
+function renderQuizFull(type, consent) {
+  currentView = () => renderQuizFull(type, consent);
+  window.scrollTo(0, 0);
+  const r = APP_DATA.quiz.results[type];
+  screen.innerHTML = `
+    <div class="card quiz-card">
+      <div class="quiz-step">Tu tipo de hambre emocional</div>
+      <div class="quiz-result-icon">${r.icon}</div>
+      <h2>${r.name}</h2>
+      <p>${r.short}</p>
+      <p>${r.full}</p>
+      ${consent ? `<p class="reminder-status">📩 Recibirás tu plan de 7 días en ${esc(state.leadEmail)}.</p>` : ""}
+    </div>
+    <div class="card next-card">
+      <div class="next-label">✨ Desbloqueado</div>
+      <div class="next-title">Módulo 1 · ${APP_DATA.modules[0].title}</div>
+      <div class="next-desc">${APP_DATA.modules[0].desc}</div>
+      <button class="btn" onclick="state.programStarted = true; save(); openModule('${APP_DATA.modules[0].id}')">Empezar el Módulo 1</button>
+    </div>
+  `;
+}
+
 // ─── PRÁCTICA DIARIA + RECORDATORIO ─────────────────────
 function todayKey(d = new Date()) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
@@ -34,9 +383,11 @@ function todayKey(d = new Date()) {
 
 function practicedToday() { return !!state.practiceDays[todayKey()]; }
 
-// El módulo de "esta semana": el primero sin completar (o el último si ya están todos)
+// El módulo de "esta semana": el primero sin completar (o el último si ya están todos),
+// limitado a los módulos que la usuaria tiene desbloqueados
 function currentModule() {
-  return APP_DATA.modules.find(m => !state.done[m.id]) || APP_DATA.modules[APP_DATA.modules.length - 1];
+  const unlocked = APP_DATA.modules.filter(isUnlocked);
+  return unlocked.find(m => !state.done[m.id]) || unlocked[unlocked.length - 1] || null;
 }
 
 function isReminderDue() {
@@ -115,6 +466,7 @@ function setActiveTab(tab) {
   highlightTab(tab);
   state.lastTab = tab;
   save();
+  currentView = () => render(tab);
   render(tab);
   window.scrollTo(0, 0);
 }
@@ -134,7 +486,8 @@ function renderHome() {
 
   const nextModule = APP_DATA.modules.find(m => !state.done[m.id]);
   const dailyModule = currentModule();
-  const showDaily = state.programStarted || state.reminderTime;
+  const showDaily = dailyModule && (state.programStarted || state.reminderTime);
+  const showQuiz = !state.leadEmail && !session;
 
   const howItWorks = APP_DATA.howItWorks.map(h => `
     <div class="how-item">
@@ -162,6 +515,15 @@ function renderHome() {
       </div>
     </div>
 
+    ${showQuiz ? `
+    <div class="card quiz-invite" onclick="startQuiz()">
+      <div class="next-label">Test gratuito · 1 minuto</div>
+      <div class="next-title">¿Qué tipo de hambre emocional tienes?</div>
+      <div class="next-desc">Descúbrelo con 5 preguntas y desbloquea gratis el Módulo 1.</div>
+      <button class="btn">Hacer el test</button>
+    </div>
+    ` : ""}
+
     ${showDaily ? (practicedToday() ? `
     <div class="card daily-done">
       ✅ Práctica de hoy hecha. Gracias por regalarte estos minutos.
@@ -171,7 +533,7 @@ function renderHome() {
       <div class="next-label">${isReminderDue() ? "⏰ Es tu momento" : "🌿 Tu práctica de hoy"}</div>
       <div class="next-title">5 minutos para ti</div>
       <div class="next-desc">${dailyModule.dailyDesc}</div>
-      <audio id="dailyPlayer" controls src="${dailyModule.daily}" style="width:100%"></audio>
+      <audio id="dailyPlayer" controls data-audio="${dailyModule.daily}" style="width:100%"></audio>
       ${state.reminderTime ? "" : `
         <button class="btn ghost" onclick="setActiveTab('progress')">⏰ Ponerme un recordatorio diario</button>
       `}
@@ -209,6 +571,7 @@ function renderHome() {
     </div>
   `;
 
+  hydrateAudios();
   trackDailyAudio($("#dailyPlayer"));
 }
 
@@ -220,6 +583,8 @@ function startProgram() {
 
 // ─── MÓDULOS ────────────────────────────────────────────
 function renderModules() {
+  currentView = renderModules;
+  highlightTab("modules");
   const done = Object.values(state.done).filter(Boolean).length;
   const total = APP_DATA.modules.length;
   const pct = Math.round((done / total) * 100);
@@ -232,12 +597,12 @@ function renderModules() {
         <div class="module-title">${m.title}</div>
         <div class="module-desc">${m.desc}</div>
       </div>
-      <div class="module-check">${state.done[m.id] ? '✅' : '⚪'}</div>
+      <div class="module-check">${!isUnlocked(m) ? (m.free ? '🎁' : '🔒') : state.done[m.id] ? '✅' : '⚪'}</div>
     </div>
   `).join("");
 
   const closing = APP_DATA.closing;
-  const closingIcon = done === total ? "▶" : "🔒";
+  const closingIcon = hasAccess && done === total ? "▶" : "🔒";
 
   screen.innerHTML = `
     <div class="card">
@@ -247,6 +612,7 @@ function renderModules() {
         <div class="progress-bar-fill" style="width:${pct}%"></div>
       </div>
       <div class="progress-text">${done} de ${total} módulos completados · ${pct}%</div>
+      ${hasAccess ? "" : `<button class="btn" onclick="goToPayment()">Desbloquear el programa completo · ${APP_DATA.price}</button>`}
     </div>
 
     <div class="card intro-card" onclick="playIntro()">
@@ -282,8 +648,20 @@ window.openModule = function(id) {
   const m = APP_DATA.modules.find(x => x.id === id);
   state.openModule = id;
   save();
+  currentView = () => openModule(id);
   highlightTab("modules");
   window.scrollTo(0, 0);
+  const unlocked = isUnlocked(m);
+
+  const lockedContent = m.free ? `
+      <div class="card paywall-card">
+        <div class="paywall-lock">🎁</div>
+        <h3>Este módulo es gratis</h3>
+        <p>Haz el test de 1 minuto «¿Qué tipo de hambre emocional tienes?» y desbloquéalo al momento.</p>
+        <button class="btn" onclick="startQuiz()">Hacer el test y desbloquear</button>
+        ${session ? "" : `<button class="chip" onclick="renderAccount('login')">Ya tengo cuenta: entrar</button>`}
+      </div>
+  ` : paywallCard("Este módulo forma parte del programa completo");
 
   screen.innerHTML = `
     <div class="module-detail">
@@ -308,16 +686,17 @@ window.openModule = function(id) {
         </div>
       </div>
 
+      ${unlocked ? `
       <div class="card">
         <div class="audio-section-title">🎧 Sesión principal</div>
         <p class="audio-hint">Escúchala una vez esta semana, en un momento tranquilo.</p>
-        <audio controls src="${m.audio}" style="width:100%; margin-top:8px"></audio>
+        <audio controls data-audio="${m.audio}" style="width:100%; margin-top:8px"></audio>
       </div>
 
       <div class="card">
         <div class="audio-section-title">🌿 Práctica diaria (5 min)</div>
         <p class="audio-hint">${m.dailyDesc}</p>
-        <audio id="moduleDaily" controls src="${m.daily}" style="width:100%; margin-top:8px"></audio>
+        <audio id="moduleDaily" controls data-audio="${m.daily}" style="width:100%; margin-top:8px"></audio>
       </div>
 
       <div class="card">
@@ -325,9 +704,11 @@ window.openModule = function(id) {
           ${state.done[m.id] ? '✅ Módulo completado' : 'Marcar como completado'}
         </button>
       </div>
+      ` : lockedContent}
     </div>
   `;
 
+  hydrateAudios();
   trackDailyAudio($("#moduleDaily"));
 };
 
@@ -338,6 +719,7 @@ window.toggleDone = function(id) {
 };
 
 window.playIntro = function() {
+  currentView = playIntro;
   screen.innerHTML = `
     <div class="card">
       <button class="back-btn" onclick="renderModules()">← Volver</button>
@@ -352,6 +734,18 @@ window.playIntro = function() {
 window.openClosing = function() {
   const c = APP_DATA.closing;
   const allDone = Object.values(state.done).filter(Boolean).length === APP_DATA.modules.length;
+  currentView = openClosing;
+  window.scrollTo(0, 0);
+
+  if (!hasAccess) {
+    screen.innerHTML = `
+      <div class="module-detail">
+        <button class="back-btn" onclick="renderModules()">← Volver</button>
+        ${paywallCard("La sesión de cierre forma parte del programa completo")}
+      </div>
+    `;
+    return;
+  }
 
   if (!allDone) {
     screen.innerHTML = `
@@ -381,9 +775,10 @@ window.openClosing = function() {
         <div class="expect-label">✨ Qué conseguirás</div>
         <p>${c.expect}</p>
       </div>
-      <audio controls src="${c.audio}" style="width:100%; margin-top:10px"></audio>
+      <audio controls data-audio="${c.audio}" style="width:100%; margin-top:10px"></audio>
     </div>
   `;
+  hydrateAudios();
 };
 
 // ─── CALMA / AUDIOS ─────────────────────────────────────
@@ -498,6 +893,20 @@ function renderProgress() {
     </div>
 
     <div class="card">
+      <h3>👤 Tu cuenta</h3>
+      ${session ? `
+        <p class="audio-hint">Has entrado como <b>${esc(session.user.email)}</b></p>
+        <p class="reminder-status">${hasAccess ? "✅ Programa completo desbloqueado" : "Plan gratuito: Bienvenida, Módulo 1 y Ayuda Rápida"}</p>
+        ${hasAccess ? "" : `<button class="btn" onclick="goToPayment()">Desbloquear el programa completo · ${APP_DATA.price}</button>`}
+        <button class="chip" style="margin-top:12px" onclick="logout()">Cerrar sesión</button>
+      ` : `
+        <p class="audio-hint">Crea una cuenta para comprar el programa completo y escucharlo en cualquier móvil.</p>
+        <button class="btn" onclick="renderAccount('signup')">Crear cuenta</button>
+        <button class="btn ghost" onclick="renderAccount('login')">Ya tengo cuenta: entrar</button>
+      `}
+    </div>
+
+    <div class="card">
       <h3>⏰ Recordatorio diario</h3>
       <p class="audio-hint">Elige a qué hora quieres hacer tu práctica de 5 minutos.</p>
       <div class="reminder-row">
@@ -546,7 +955,21 @@ window.resetProgress = function () {
 };
 // ─── INIT ───────────────────────────────────────────────
 document.querySelectorAll(".tab").forEach(t => t.onclick = () => setActiveTab(t.dataset.tab));
-setActiveTab(state.lastTab || "home");
+
+(async function boot() {
+  // Pintamos ya la parte gratuita y, cuando sepamos si hay sesión y compra, repintamos
+  setActiveTab(state.lastTab || "home");
+  await refreshAccess().catch(err => console.error("Acceso:", err));
+  if (!(await handlePaymentReturn())) currentView();
+
+  if (sb) {
+    sb.auth.onAuthStateChange((event) => {
+      if (event !== "SIGNED_IN" && event !== "SIGNED_OUT") return;
+      // Fuera del callback: Supabase recomienda no llamar a la API dentro de él
+      setTimeout(() => refreshAccess().then(() => currentView()), 0);
+    });
+  }
+})();
 
 // Al volver a la app (p. ej. desde el aviso del calendario), refresca la práctica del día en Inicio
 document.addEventListener("visibilitychange", () => {

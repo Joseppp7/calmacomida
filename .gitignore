@@ -2,3 +2,5 @@ dist/
 node_modules/
 *.log
 electron-quick-start/
+# Audios de pago: se suben a Supabase (almacenamiento privado), no a GitHub
+audios-de-pago/
