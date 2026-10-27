@@ -1,5 +1,5 @@
 // CalmaComida Service Worker FINAL FIX
-const CACHE_NAME = 'calmacomida-v2';
+const CACHE_NAME = 'calmacomida-v3';
 // Solo archivos realmente estáticos
 const STATIC_ASSETS = [
   "./",
@@ -41,15 +41,19 @@ self.addEventListener("fetch", event => {
 
   // SOLO manejamos peticiones de nuestra web
   if (request.method !== "GET") return;
+  if (new URL(request.url).origin !== self.location.origin) return;
+
+  // Los audios se piden por trozos (Range) y no se pueden guardar en caché así
+  if (request.headers.has("range")) return;
 
   event.respondWith(
     fetch(request)
       .then(response => {
-        // guardamos copia nueva
-        const responseClone = response.clone();
-        caches.open(CACHE_NAME).then(cache => {
-          cache.put(request, responseClone);
-        });
+        // guardamos copia nueva (solo respuestas completas y correctas)
+        if (response.ok && response.status === 200) {
+          const responseClone = response.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(request, responseClone));
+        }
         return response;
       })
       .catch(() => caches.match(request))

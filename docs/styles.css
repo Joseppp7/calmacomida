@@ -354,3 +354,19 @@ h1 {
 
 .tab .icon { font-size: 22px; }
 .tab.active { color: var(--brand); }
+/* RECORDATORIO DIARIO */
+.daily-done { font-size: 14px; color: var(--success); font-weight: 600; padding: 16px 22px; }
+.reminder-row { display: flex; gap: 10px; align-items: center; margin-top: 12px; }
+.time-input {
+  flex: 1;
+  padding: 14px;
+  border-radius: 16px;
+  border: 2px solid var(--soft);
+  background: var(--soft);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+  font-family: inherit;
+}
+.reminder-save { width: auto; margin-top: 0; padding: 16px 22px; }
+.reminder-status { font-size: 14px; color: var(--success); margin: 12px 0 0; }

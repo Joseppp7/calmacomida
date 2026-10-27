@@ -3,20 +3,120 @@ const $ = (sel) => document.querySelector(sel);
 const screen = $("#screen");
 const STORAGE_KEY = "calmacomida_v5";
 
-let state = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {
+const DEFAULT_STATE = {
   done: {},
   lastTab: "home",
   programStarted: false,
-  openModule: null
+  openModule: null,
+  reminderTime: null,   // "HH:MM" o null
+  practiceDays: {}      // { "2026-10-27": true } días con práctica diaria hecha
 };
 
-function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+// Si el progreso guardado está dañado, empezamos de cero en lugar de romper la app
+function loadState() {
+  try {
+    return { ...DEFAULT_STATE, ...JSON.parse(localStorage.getItem(STORAGE_KEY)) };
+  } catch {
+    return { ...DEFAULT_STATE };
+  }
+}
+
+let state = loadState();
+
+function save() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch {}
+}
+
+// ─── PRÁCTICA DIARIA + RECORDATORIO ─────────────────────
+function todayKey(d = new Date()) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+function practicedToday() { return !!state.practiceDays[todayKey()]; }
+
+// El módulo de "esta semana": el primero sin completar (o el último si ya están todos)
+function currentModule() {
+  return APP_DATA.modules.find(m => !state.done[m.id]) || APP_DATA.modules[APP_DATA.modules.length - 1];
+}
+
+function isReminderDue() {
+  if (!state.reminderTime) return false;
+  const [h, min] = state.reminderTime.split(":").map(Number);
+  const now = new Date();
+  return now.getHours() * 60 + now.getMinutes() >= h * 60 + min;
+}
+
+// Cuenta la práctica del día cuando el audio diario se escucha hasta el final
+function trackDailyAudio(audio) {
+  if (!audio) return;
+  audio.addEventListener("ended", () => {
+    state.practiceDays[todayKey()] = true;
+    save();
+    if (state.lastTab === "home" && document.getElementById("dailyCard")) renderHome();
+  });
+}
+
+window.saveReminder = function() {
+  const value = $("#reminderTime").value;
+  if (!value) return;
+  state.reminderTime = value;
+  save();
+  renderProgress();
+};
+
+window.clearReminder = function() {
+  state.reminderTime = null;
+  save();
+  renderProgress();
+};
+
+// Crea un evento diario con aviso para el calendario del móvil (funciona con la app cerrada)
+window.downloadReminderIcs = function() {
+  if (!state.reminderTime) return;
+  const [h, min] = state.reminderTime.split(":");
+  const start = `${todayKey().replace(/-/g, "")}T${h}${min}00`;
+  const stamp = new Date().toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
+  const ics = [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//CalmaComida//ES",
+    "BEGIN:VEVENT",
+    `UID:calmacomida-practica-${stamp}`,
+    `DTSTAMP:${stamp}`,
+    `DTSTART:${start}`,
+    "DURATION:PT5M",
+    "RRULE:FREQ=DAILY",
+    "SUMMARY:🌿 CalmaComida · Tu práctica de 5 minutos",
+    "DESCRIPTION:Abre CalmaComida y escucha tu práctica diaria.",
+    "BEGIN:VALARM",
+    "ACTION:DISPLAY",
+    "DESCRIPTION:Es tu momento: 5 minutos para ti",
+    "TRIGGER:PT0M",
+    "END:VALARM",
+    "END:VEVENT",
+    "END:VCALENDAR"
+  ].join("\r\n");
+
+  const url = URL.createObjectURL(new Blob([ics], { type: "text/calendar" }));
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "calmacomida-recordatorio.ics";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+};
+
+function highlightTab(tab) {
+  document.querySelectorAll(".tab").forEach(b => b.classList.toggle("active", b.dataset.tab === tab));
+}
 
 function setActiveTab(tab) {
-  document.querySelectorAll(".tab").forEach(b => b.classList.toggle("active", b.dataset.tab === tab));
+  highlightTab(tab);
   state.lastTab = tab;
   save();
   render(tab);
+  window.scrollTo(0, 0);
 }
 
 function render(tab) {
@@ -33,6 +133,8 @@ function renderHome() {
   const pct = Math.round((done / total) * 100);
 
   const nextModule = APP_DATA.modules.find(m => !state.done[m.id]);
+  const dailyModule = currentModule();
+  const showDaily = state.programStarted || state.reminderTime;
 
   const howItWorks = APP_DATA.howItWorks.map(h => `
     <div class="how-item">
@@ -59,6 +161,22 @@ function renderHome() {
         <p>Sin dietas. Sin culpa. A tu ritmo.</p>
       </div>
     </div>
+
+    ${showDaily ? (practicedToday() ? `
+    <div class="card daily-done">
+      ✅ Práctica de hoy hecha. Gracias por regalarte estos minutos.
+    </div>
+    ` : `
+    <div class="card next-card" id="dailyCard">
+      <div class="next-label">${isReminderDue() ? "⏰ Es tu momento" : "🌿 Tu práctica de hoy"}</div>
+      <div class="next-title">5 minutos para ti</div>
+      <div class="next-desc">${dailyModule.dailyDesc}</div>
+      <audio id="dailyPlayer" controls src="${dailyModule.daily}" style="width:100%"></audio>
+      ${state.reminderTime ? "" : `
+        <button class="btn ghost" onclick="setActiveTab('progress')">⏰ Ponerme un recordatorio diario</button>
+      `}
+    </div>
+    `) : ""}
 
     ${state.programStarted && nextModule ? `
     <div class="card next-card">
@@ -90,6 +208,8 @@ function renderHome() {
       ${testimonials}
     </div>
   `;
+
+  trackDailyAudio($("#dailyPlayer"));
 }
 
 function startProgram() {
@@ -117,6 +237,7 @@ function renderModules() {
   `).join("");
 
   const closing = APP_DATA.closing;
+  const closingIcon = done === total ? "▶" : "🔒";
 
   screen.innerHTML = `
     <div class="card">
@@ -151,7 +272,7 @@ function renderModules() {
           <div class="closing-title">${closing.title}</div>
           <div class="closing-desc">${closing.desc.substring(0, 80)}...</div>
         </div>
-        <div>🔒</div>
+        <div>${closingIcon}</div>
       </div>
     </div>
   `;
@@ -161,6 +282,8 @@ window.openModule = function(id) {
   const m = APP_DATA.modules.find(x => x.id === id);
   state.openModule = id;
   save();
+  highlightTab("modules");
+  window.scrollTo(0, 0);
 
   screen.innerHTML = `
     <div class="module-detail">
@@ -169,7 +292,7 @@ window.openModule = function(id) {
       <img src="${m.image}" class="module-hero-img" alt="${m.title}">
 
       <div class="card">
-        <div class="module-badge">Módulo ${m.number} de 7</div>
+        <div class="module-badge">Módulo ${m.number} de ${APP_DATA.modules.length}</div>
         <h2>${m.title}</h2>
         <p class="module-phrase">"${m.phrase}"</p>
       </div>
@@ -194,7 +317,7 @@ window.openModule = function(id) {
       <div class="card">
         <div class="audio-section-title">🌿 Práctica diaria (5 min)</div>
         <p class="audio-hint">${m.dailyDesc}</p>
-        <audio controls src="${m.daily}" style="width:100%; margin-top:8px"></audio>
+        <audio id="moduleDaily" controls src="${m.daily}" style="width:100%; margin-top:8px"></audio>
       </div>
 
       <div class="card">
@@ -204,6 +327,8 @@ window.openModule = function(id) {
       </div>
     </div>
   `;
+
+  trackDailyAudio($("#moduleDaily"));
 };
 
 window.toggleDone = function(id) {
@@ -327,7 +452,7 @@ window.playQuickAudio = function(file, title) {
   card.style.display = "block";
   label.textContent = "▶ " + title;
   player.src = file;
-  player.play();
+  player.play().catch(() => {});
   card.scrollIntoView({ behavior: "smooth" });
 };
 
@@ -373,6 +498,21 @@ function renderProgress() {
     </div>
 
     <div class="card">
+      <h3>⏰ Recordatorio diario</h3>
+      <p class="audio-hint">Elige a qué hora quieres hacer tu práctica de 5 minutos.</p>
+      <div class="reminder-row">
+        <input type="time" id="reminderTime" class="time-input" value="${state.reminderTime || "20:00"}">
+        <button class="btn reminder-save" onclick="saveReminder()">${state.reminderTime ? "Cambiar" : "Activar"}</button>
+      </div>
+      ${state.reminderTime ? `
+        <p class="reminder-status">Activo · cada día a las <b>${state.reminderTime}</b></p>
+        <button class="btn ghost" onclick="downloadReminderIcs()">📅 Añadir aviso a mi calendario</button>
+        <p class="audio-hint" style="margin-top:8px">Así el móvil te avisará cada día aunque la app esté cerrada.</p>
+        <button class="chip" style="margin-top:12px" onclick="clearReminder()">Quitar recordatorio</button>
+      ` : ""}
+    </div>
+
+    <div class="card">
       <h3>Tu recorrido</h3>
       ${moduleProgress}
     </div>
@@ -404,8 +544,16 @@ window.resetProgress = function () {
   alert("Tu proceso ha sido reiniciado. Puedes comenzar de nuevo cuando quieras.");
   renderProgress();
 };
-// ─── RESET ──────────────────────────────────────────────
-
 // ─── INIT ───────────────────────────────────────────────
 document.querySelectorAll(".tab").forEach(t => t.onclick = () => setActiveTab(t.dataset.tab));
 setActiveTab(state.lastTab || "home");
+
+// Al volver a la app (p. ej. desde el aviso del calendario), refresca la práctica del día en Inicio
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible" && state.lastTab === "home") renderHome();
+});
+
+// Permite instalar la app y abrirla sin conexión
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("./service-worker.js").catch(() => {});
+}
