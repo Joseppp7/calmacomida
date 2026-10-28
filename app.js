@@ -35,8 +35,14 @@ function esc(text) {
 let currentView = () => render(state.lastTab || "home");
 
 // ─── CUENTA Y ACCESO ────────────────────────────────────
+// El enlace del email de "olvidé mi contraseña" vuelve con #...type=recovery (o #error=... si caducó).
+// Lo leemos antes de crear el cliente, porque Supabase limpia la dirección al procesarla.
+const recoveryHash = new URLSearchParams(location.hash.slice(1));
+const isPasswordRecovery = recoveryHash.get("type") === "recovery";
+const recoveryLinkError = recoveryHash.get("error_code");
+
 // Si la librería no carga (p. ej. sin conexión), la parte gratuita sigue funcionando
-const sb = window.supabase ? window.supabase.createClient(APP_DATA.supabaseUrl, APP_DATA.supabaseKey) : null;
+const sb =window.supabase ? window.supabase.createClient(APP_DATA.supabaseUrl, APP_DATA.supabaseKey) : null;
 let session = null;
 let hasAccess = false;
 
@@ -142,7 +148,7 @@ window.renderAccount = function(mode = "signup", thenPay = false) {
       <button class="chip" style="margin-top:14px" onclick="renderAccount('${isSignup ? "login" : "signup"}', ${thenPay})">
         ${isSignup ? "Ya tengo cuenta: entrar" : "No tengo cuenta: crearla"}
       </button>
-      ${!isSignup && APP_DATA.supportEmail ? `<p class="audio-hint" style="margin-top:12px">¿Has olvidado tu contraseña? Escríbenos a ${esc(APP_DATA.supportEmail)}</p>` : ""}
+      ${isSignup ? "" : `<button class="chip" style="margin-top:10px" onclick="renderForgotPassword()">¿Olvidaste tu contraseña?</button>`}
     </div>
   `;
 
@@ -190,12 +196,132 @@ window.renderAccount = function(mode = "signup", thenPay = false) {
   };
 };
 
+// ─── RECUPERAR CONTRASEÑA ───────────────────────────────
+window.renderForgotPassword = function() {
+  currentView = () => renderForgotPassword();
+  highlightTab("progress");
+  window.scrollTo(0, 0);
+
+  screen.innerHTML = `
+    <div class="card">
+      <button class="back-btn" onclick="renderAccount('login')">← Volver</button>
+      <h2>¿Olvidaste tu contraseña?</h2>
+      <p class="audio-hint">Escribe el email de tu cuenta y te enviaremos un enlace para crear una contraseña nueva.</p>
+      <form id="forgotForm" class="account-form" novalidate>
+        <label>Email
+          <input type="email" id="forgotEmail" autocomplete="email" required value="${esc(state.leadEmail || "")}">
+        </label>
+        <p class="form-error" id="forgotError"></p>
+        <button class="btn" type="submit" id="forgotSubmit">Enviarme el enlace</button>
+      </form>
+    </div>
+  `;
+
+  $("#forgotForm").onsubmit = async (e) => {
+    e.preventDefault();
+    const email = $("#forgotEmail").value.trim();
+    const errorEl = $("#forgotError");
+    errorEl.textContent = "";
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) { errorEl.textContent = "Escribe un email válido."; return; }
+    if (!sb) { errorEl.textContent = "No hay conexión. Inténtalo de nuevo en un momento."; return; }
+
+    const button = $("#forgotSubmit");
+    button.disabled = true;
+    button.textContent = "Un momento…";
+
+    const { error } = await sb.auth.resetPasswordForEmail(email, {
+      redirectTo: location.origin + location.pathname,
+    });
+
+    if (error) {
+      button.disabled = false;
+      button.textContent = "Enviarme el enlace";
+      errorEl.textContent = authErrorText(error);
+      return;
+    }
+
+    // Mismo mensaje exista o no la cuenta, para no revelar qué emails están registrados
+    screen.innerHTML = `
+      <div class="card" style="text-align:center">
+        <div style="font-size:48px; margin:10px 0">📩</div>
+        <h3>Revisa tu email</h3>
+        <p>Si ${esc(email)} tiene cuenta, en unos minutos te llegará un enlace para crear una contraseña nueva. Mira también en la carpeta de spam.</p>
+        <button class="btn ghost" onclick="renderAccount('login')">Volver a entrar</button>
+      </div>
+    `;
+  };
+};
+
+window.renderNewPassword = function() {
+  currentView = () => renderNewPassword();
+  highlightTab("progress");
+  window.scrollTo(0, 0);
+
+  screen.innerHTML = `
+    <div class="card">
+      <h2>Crea tu contraseña nueva</h2>
+      <form id="newPassForm" class="account-form" novalidate>
+        <label>Contraseña nueva
+          <input type="password" id="newPass" autocomplete="new-password" minlength="6" required>
+        </label>
+        <p class="audio-hint">Mínimo 6 caracteres.</p>
+        <p class="form-error" id="newPassError"></p>
+        <button class="btn" type="submit" id="newPassSubmit">Guardar contraseña</button>
+      </form>
+    </div>
+  `;
+
+  $("#newPassForm").onsubmit = async (e) => {
+    e.preventDefault();
+    const password = $("#newPass").value;
+    const errorEl = $("#newPassError");
+    errorEl.textContent = "";
+
+    if (password.length < 6) { errorEl.textContent = "La contraseña necesita al menos 6 caracteres."; return; }
+    if (!session) { errorEl.textContent = "El enlace ha caducado. Pide uno nuevo desde «¿Olvidaste tu contraseña?»."; return; }
+
+    const button = $("#newPassSubmit");
+    button.disabled = true;
+    button.textContent = "Un momento…";
+
+    const { error } = await sb.auth.updateUser({ password });
+    if (error) {
+      button.disabled = false;
+      button.textContent = "Guardar contraseña";
+      errorEl.textContent = authErrorText(error);
+      return;
+    }
+
+    screen.innerHTML = `
+      <div class="card" style="text-align:center">
+        <div style="font-size:48px; margin:10px 0">✅</div>
+        <h3>Contraseña guardada</h3>
+        <p>Ya has entrado en tu cuenta. La próxima vez usa tu contraseña nueva.</p>
+        <button class="btn" onclick="setActiveTab('progress')">Continuar</button>
+      </div>
+    `;
+  };
+};
+
+function renderRecoveryLinkExpired() {
+  screen.innerHTML = `
+    <div class="card" style="text-align:center">
+      <div style="font-size:48px; margin:10px 0">⌛</div>
+      <h3>Este enlace ya no sirve</h3>
+      <p>Los enlaces para cambiar la contraseña caducan al cabo de un rato y solo se pueden usar una vez. Pide uno nuevo.</p>
+      <button class="btn" onclick="renderForgotPassword()">Pedir un enlace nuevo</button>
+    </div>
+  `;
+}
+
 function authErrorText(error) {
   const msg = (error.message || "").toLowerCase();
   if (msg.includes("already registered")) return "Ese email ya tiene cuenta. Pulsa «Ya tengo cuenta: entrar».";
   if (msg.includes("invalid login")) return "Email o contraseña incorrectos.";
   if (msg.includes("email not confirmed")) return "Confirma tu email con el enlace que te enviamos y vuelve a intentarlo.";
   if (msg.includes("rate limit")) return "Demasiados intentos seguidos. Espera unos minutos.";
+  if (msg.includes("different from the old")) return "La contraseña nueva tiene que ser distinta de la anterior.";
   return "No se pudo completar. Inténtalo de nuevo.";
 }
 
@@ -960,11 +1086,16 @@ document.querySelectorAll(".tab").forEach(t => t.onclick = () => setActiveTab(t.
   // Pintamos ya la parte gratuita y, cuando sepamos si hay sesión y compra, repintamos
   setActiveTab(state.lastTab || "home");
   await refreshAccess().catch(err => console.error("Acceso:", err));
-  if (!(await handlePaymentReturn())) currentView();
+  if (isPasswordRecovery && session) renderNewPassword();
+  else if (recoveryLinkError) { history.replaceState(null, "", location.pathname); renderRecoveryLinkExpired(); }
+  else if (!(await handlePaymentReturn())) currentView();
 
   if (sb) {
     sb.auth.onAuthStateChange((event) => {
+      if (event === "PASSWORD_RECOVERY") { setTimeout(() => refreshAccess().then(() => renderNewPassword()), 0); return; }
       if (event !== "SIGNED_IN" && event !== "SIGNED_OUT") return;
+      // Mientras crea su contraseña nueva no la sacamos de esa pantalla
+      if (isPasswordRecovery && event === "SIGNED_IN") return;
       // Fuera del callback: Supabase recomienda no llamar a la API dentro de él
       setTimeout(() => refreshAccess().then(() => currentView()), 0);
     });
