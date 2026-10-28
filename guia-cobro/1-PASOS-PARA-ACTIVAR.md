@@ -72,6 +72,7 @@ Hazlos en orden. Todo se prueba primero en **modo de prueba** (sin dinero real).
 - [ ] Completar y revisar la página de privacidad (`docs/privacidad.html`) y añadir condiciones de compra.
 - [ ] Quitar o sustituir los testimonios si no son reales y con permiso.
 - [ ] Poner tu email de contacto en `supportEmail` (`docs/data.js`).
-- [ ] Crear cuenta en Cloudflare para publicar la nueva versión y poner el repositorio de GitHub en privado.
+- [ ] Conectar un servicio de envío de emails (p. ej. Resend, gratis hasta 3.000 al mes) en Supabase → Authentication → Emails → SMTP. Sin esto, el email de «¿Olvidaste tu contraseña?» solo llega a ti, no a las clientas.
+- [ ] Crear cuenta en Cloudflare para publicar la nueva versión y poner el repositorio de GitHub en privado (los audios de pago siguen en versiones antiguas del repositorio público).
 - [ ] Activar Stripe en modo real (verificación de identidad + IBAN), crear el enlace de pago real y cambiarlo en la app.
 - [ ] Recomendado: dominio propio (calmacomida.es o similar).
