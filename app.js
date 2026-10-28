@@ -84,10 +84,36 @@ function hydrateAudios() {
   });
 }
 
+// Antes de pagar, aceptación expresa de las condiciones y de la pérdida del desistimiento
+// (contenido digital con acceso inmediato, art. 103.m TRLGDCU)
 window.goToPayment = function() {
   if (!session) return renderAccount("signup", true);
   if (!APP_DATA.paymentLink) {
     alert("El pago todavía no está activado. Vuelve a intentarlo en unos días.");
+    return;
+  }
+  currentView = () => goToPayment();
+  highlightTab("progress");
+  window.scrollTo(0, 0);
+
+  screen.innerHTML = `
+    <div class="card">
+      <button class="back-btn" onclick="setActiveTab('progress')">← Volver</button>
+      <h2>Programa completo · ${APP_DATA.price}</h2>
+      <p class="audio-hint">Pago único, sin suscripciones. El acceso es inmediato y para siempre en tu cuenta <b>${esc(session.user.email)}</b>.</p>
+      <label class="consent">
+        <input type="checkbox" id="payConsent">
+        <span>He leído y acepto las <a href="./condiciones.html" target="_blank">condiciones de compra</a>, y pido acceder al programa en cuanto pague. Entiendo que por eso pierdo el derecho de desistimiento de 14 días.</span>
+      </label>
+      <p class="form-error" id="payError"></p>
+      <button class="btn" onclick="continueToPayment()">Ir al pago seguro</button>
+    </div>
+  `;
+};
+
+window.continueToPayment = function() {
+  if (!$("#payConsent").checked) {
+    $("#payError").textContent = "Marca la casilla para continuar.";
     return;
   }
   const url = new URL(APP_DATA.paymentLink);
@@ -1031,6 +1057,7 @@ function renderProgress() {
         <button class="btn ghost" onclick="renderAccount('login')">Ya tengo cuenta: entrar</button>
       `}
       ${APP_DATA.supportEmail ? `<p class="audio-hint" style="margin-top:14px">¿Dudas con tu cuenta o tu compra? Escríbenos a <a href="mailto:${esc(APP_DATA.supportEmail)}">${esc(APP_DATA.supportEmail)}</a></p>` : ""}
+      <p class="audio-hint"><a href="./condiciones.html">Condiciones de compra</a> · <a href="./privacidad.html">Privacidad</a></p>
     </div>
 
     <div class="card">
