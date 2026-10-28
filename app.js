@@ -466,6 +466,10 @@ function renderQuizResult(type) {
           <input type="checkbox" id="leadConsent">
           <span>Quiero recibir el plan de 7 días y otros emails de CalmaComida (máximo uno al día). Puedo darme de baja cuando quiera. <a href="privacidad.html" target="_blank">Privacidad</a></span>
         </label>
+        <label class="consent">
+          <input type="checkbox" id="leadHealthConsent">
+          <span>Opcional: doy mi consentimiento explícito para que guardéis mi resultado del test, que es un dato relacionado con mi salud, y lo uséis solo para adaptar esos emails. Si no lo marco, recibo los emails generales y mi resultado no sale de este móvil.</span>
+        </label>
         <p class="form-error" id="leadError"></p>
         <button class="btn" type="submit" id="leadSubmit">Ver mi resultado y desbloquear el Módulo 1</button>
       </form>
@@ -476,6 +480,7 @@ function renderQuizResult(type) {
     e.preventDefault();
     const email = $("#leadEmail").value.trim();
     const consent = $("#leadConsent").checked;
+    const healthConsent = consent && $("#leadHealthConsent").checked;
     const errorEl = $("#leadError");
     errorEl.textContent = "";
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) { errorEl.textContent = "Escribe un email válido."; return; }
@@ -488,7 +493,8 @@ function renderQuizResult(type) {
       const res = await fetch(`${APP_DATA.supabaseUrl}/functions/v1/subscribe-lead`, {
         method: "POST",
         headers: { "Content-Type": "application/json", "apikey": APP_DATA.supabaseKey },
-        body: JSON.stringify({ email, quizType: type, answers: quizAnswers, consent })
+        // Las respuestas no salen del móvil; el resultado solo con consentimiento explícito (dato de salud)
+        body: JSON.stringify({ email, consent, healthConsent, quizType: healthConsent ? type : null })
       });
       if (!res.ok) throw new Error(await res.text());
     } catch (err) {

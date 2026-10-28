@@ -2,6 +2,8 @@
 
 Borradores para revisar y adaptar a tu voz. Firma con tu nombre real.
 `{$tipo_hambre}` se sustituye por el resultado del test (p. ej. "Hambre de descarga").
+
+> **Importante (datos de salud):** el resultado solo llega a MailerLite si la persona marcó la casilla opcional de consentimiento explícito. Si no la marcó, `{$tipo_hambre}` llega **vacío**. Escribe los asuntos y textos para que se lean bien también sin él (p. ej. con un bloque condicional de MailerLite, o con una versión general de los emails de los días 0 y 7).
 `[ENLACE APP]` = la dirección de la app. MailerLite añade solo el enlace de baja al pie.
 
 > Evita prometer resultados de peso o de salud: habla de calma, conciencia y relación con la comida.

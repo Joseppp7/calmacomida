@@ -1,5 +1,6 @@
-// Guarda el email y el resultado del test, y lo da de alta en MailerLite
-// si la persona ha dado su permiso.
+// Guarda el email y lo da de alta en MailerLite si la persona ha dado su permiso.
+// El resultado del test es un dato de salud (art. 9 RGPD): solo se guarda y se envía
+// a MailerLite con su consentimiento explícito (healthConsent). Las respuestas nunca se guardan.
 // Secretos opcionales (Supabase → Edge Functions → Secrets):
 //   MAILERLITE_API_KEY, MAILERLITE_GROUP_ID
 import { createClient } from "npm:@supabase/supabase-js@2.49.1";
@@ -57,7 +58,7 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
   if (req.method !== "POST") return json({ error: "Método no permitido" }, 405);
 
-  let body: { email?: string; quizType?: string; answers?: unknown; consent?: boolean };
+  let body: { email?: string; quizType?: string; consent?: boolean; healthConsent?: boolean };
   try {
     body = await req.json();
   } catch {
@@ -68,17 +69,20 @@ Deno.serve(async (req) => {
   if (!EMAIL_RE.test(email) || email.length > 254) {
     return json({ error: "Email no válido" }, 400);
   }
-  const quizType = QUIZ_TYPES.includes(String(body.quizType)) ? String(body.quizType) : null;
-  const answers = Array.isArray(body.answers) ? body.answers.slice(0, 10) : null;
   const consent = body.consent === true;
+  // El resultado solo sirve para personalizar los emails: sin permiso para emails, no se guarda
+  const healthConsent = consent && body.healthConsent === true;
+  const quizType = healthConsent && QUIZ_TYPES.includes(String(body.quizType)) ? String(body.quizType) : null;
+  const now = new Date().toISOString();
 
   const { error } = await supabase.from("leads").upsert(
     {
       email,
       quiz_type: quizType,
-      answers,
       consent,
-      consent_at: consent ? new Date().toISOString() : null,
+      consent_at: consent ? now : null,
+      health_consent: healthConsent,
+      health_consent_at: healthConsent ? now : null,
     },
     { onConflict: "email" },
   );
