@@ -1030,6 +1030,7 @@ function renderProgress() {
         <button class="btn" onclick="renderAccount('signup')">Crear cuenta</button>
         <button class="btn ghost" onclick="renderAccount('login')">Ya tengo cuenta: entrar</button>
       `}
+      ${APP_DATA.supportEmail ? `<p class="audio-hint" style="margin-top:14px">¿Dudas con tu cuenta o tu compra? Escríbenos a <a href="mailto:${esc(APP_DATA.supportEmail)}">${esc(APP_DATA.supportEmail)}</a></p>` : ""}
     </div>
 
     <div class="card">
