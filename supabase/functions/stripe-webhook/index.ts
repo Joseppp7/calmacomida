@@ -12,7 +12,8 @@ const supabase = createClient(
 );
 
 Deno.serve(async (req) => {
-  const webhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET");
+  // trim(): al pegar el secreto en el panel es fácil que se cuele un espacio o salto de línea
+  const webhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET")?.trim();
   if (!webhookSecret) {
     console.error("Falta el secreto STRIPE_WEBHOOK_SECRET");
     return new Response("Stripe sin configurar", { status: 500 });
