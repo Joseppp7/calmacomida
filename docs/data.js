@@ -6,7 +6,7 @@ window.APP_DATA = {
   // ─── COBRO ───────────────────────────────────────────
   price: "47 €",
   // Enlace de pago de Stripe (Payment Link). Mientras esté vacío, el botón de pago avisa de que aún no está activo.
-  paymentLink: "",
+  paymentLink: "https://buy.stripe.com/test_00w4gy1OG32a8t8eWYdAk00",   // MODO PRUEBA: cambiar por el enlace real antes de vender
   supportEmail: "",   // email de contacto para dudas con la compra
   supabaseUrl: "https://annwqcfehdvuhhcqfeix.supabase.co",
   supabaseKey: "sb_publishable_RHH74W6raLPobRAjBHhZPg_fbXAiOZt",   // clave pública: es seguro que esté aquí
