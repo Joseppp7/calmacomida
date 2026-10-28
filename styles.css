@@ -370,3 +370,52 @@ h1 {
 }
 .reminder-save { width: auto; margin-top: 0; padding: 16px 22px; }
 .reminder-status { font-size: 14px; color: var(--success); margin: 12px 0 0; }
+
+/* COBRO Y CUENTA */
+.paywall-card { text-align: center; border: 2px solid var(--soft); }
+.paywall-lock { font-size: 40px; margin: 4px 0; }
+.paywall-list { text-align: left; padding-left: 20px; margin: 12px 0; color: var(--text); font-size: 15px; }
+.paywall-list li { margin: 4px 0; }
+.paywall-note { font-size: 12px; color: var(--muted); margin: 8px 0 12px; }
+.account-form { display: flex; flex-direction: column; gap: 12px; margin-top: 14px; text-align: left; }
+.account-form label { display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 600; color: var(--text); }
+.account-form input[type="email"],
+.account-form input[type="password"] {
+  padding: 14px;
+  border-radius: 14px;
+  border: 2px solid var(--soft);
+  background: var(--soft);
+  font-size: 16px;
+  font-family: inherit;
+  color: var(--text);
+}
+.account-form input:focus { outline: none; border-color: var(--accent); }
+.account-form .consent { flex-direction: row; align-items: flex-start; gap: 10px; font-weight: 400; font-size: 13px; color: var(--muted); }
+.account-form .consent input { margin-top: 3px; width: 18px; height: 18px; flex: none; accent-color: var(--brand); }
+.account-form .consent a { color: var(--brand); }
+.form-error { color: #b3261e; font-size: 14px; margin: 0; min-height: 0; }
+.form-error:empty { display: none; }
+.btn:disabled { opacity: 0.6; cursor: wait; }
+
+/* TEST DE HAMBRE EMOCIONAL */
+.quiz-invite { cursor: pointer; border-left: 4px solid var(--accent); }
+.quiz-card { text-align: center; }
+.quiz-step { font-size: 12px; color: var(--accent); font-weight: 700; text-transform: uppercase; margin: 6px 0 10px; }
+.quiz-question { margin: 18px 0 14px; font-size: 21px; }
+.quiz-option {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 15px 16px;
+  margin-top: 10px;
+  border-radius: 16px;
+  border: 2px solid var(--soft);
+  background: var(--card);
+  font-size: 15px;
+  font-family: inherit;
+  color: var(--text);
+  cursor: pointer;
+}
+.quiz-option:active { border-color: var(--accent); background: var(--soft); }
+.quiz-result-icon { font-size: 56px; margin: 4px 0; }
+.quiz-locked { margin-top: 12px; padding: 12px; border: 2px dashed var(--soft); border-radius: 14px; color: var(--muted); font-size: 14px; }
