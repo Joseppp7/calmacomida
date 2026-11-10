@@ -391,6 +391,7 @@ async function handlePaymentReturn() {
 
 // ─── TEST DE HAMBRE EMOCIONAL ───────────────────────────
 let quizAnswers = [];
+const QUIZ_DISCLAIMER = "Este test es orientativo, no es un diagnóstico. Si crees que puedes tener un trastorno de la conducta alimentaria, consulta con un profesional de la salud.";
 
 window.startQuiz = function() {
   quizAnswers = [];
@@ -449,6 +450,7 @@ function renderQuizResult(type) {
       <h2>${r.name}</h2>
       <p>${r.short}</p>
       <div class="quiz-locked">🔒 Por qué te pasa y tu plan de 7 días</div>
+      <p class="audio-hint">${QUIZ_DISCLAIMER}</p>
     </div>
 
     <div class="card">
@@ -524,6 +526,7 @@ function renderQuizFull(type, consent) {
       <p>${r.short}</p>
       <p>${r.full}</p>
       ${consent ? `<p class="reminder-status">📩 Recibirás tu plan de 7 días en ${esc(state.leadEmail)}.</p>` : ""}
+      <p class="audio-hint">${QUIZ_DISCLAIMER}</p>
     </div>
     <div class="card next-card">
       <div class="next-label">✨ Desbloqueado</div>
@@ -723,10 +726,12 @@ function renderHome() {
       ${howItWorks}
     </div>
 
+    ${testimonials ? `
     <div class="card">
       <h3>Lo que dicen ellas</h3>
       ${testimonials}
     </div>
+    ` : ""}
   `;
 
   hydrateAudios();

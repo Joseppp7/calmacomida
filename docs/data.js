@@ -96,11 +96,9 @@ window.APP_DATA = {
     { icon: "✨", title: "Registra tu evolución", desc: "No contamos calorías. Registramos cómo te sientes. Eso es lo que realmente cambia." }
   ],
 
-  testimonials: [
-    { name: "Elena, 42 años", text: "Por fin entiendo qué me pasa por las noches. Esta app es mi salvavidas." },
-    { name: "Marta, 38 años", text: "Los audios cortos antes de comer han cambiado mi digestión y mi ansiedad." },
-    { name: "Susana, 51 años", text: "Llevaba 20 años a dieta. Esto es lo primero que me ha dado paz de verdad." }
-  ],
+  // Solo testimonios reales y con permiso por escrito. Mientras esté vacío, la sección no se muestra.
+  // Formato: { name: "Elena, 42 años", text: "..." }
+  testimonials: [],
 
   modules: [
     {

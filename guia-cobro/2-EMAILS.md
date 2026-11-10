@@ -3,7 +3,7 @@
 Borradores para revisar y adaptar a tu voz. Firma con tu nombre real.
 `{$tipo_hambre}` se sustituye por el resultado del test (p. ej. "Hambre de descarga").
 
-> **Importante (datos de salud):** el resultado solo llega a MailerLite si la persona marcó la casilla opcional de consentimiento explícito. Si no la marcó, `{$tipo_hambre}` llega **vacío**. Escribe los asuntos y textos para que se lean bien también sin él (p. ej. con un bloque condicional de MailerLite, o con una versión general de los emails de los días 0 y 7).
+> **Importante (datos de salud):** el resultado solo llega a MailerLite si la persona marcó la casilla opcional de consentimiento explícito. Si no la marcó, `{$tipo_hambre}` llega **vacío**. Por eso los días 0 y 7 tienen dos versiones: la **personalizada** (para quien tiene el campo `tipo_hambre` relleno) y la **general** (campo vacío). En la automatización de MailerLite, pon antes de esos dos emails una condición *«tipo_hambre está vacío»* y manda cada rama a su versión. Los días 1 a 6 sirven para todas.
 `[ENLACE APP]` = la dirección de la app. MailerLite añade solo el enlace de baja al pie.
 
 > Evita prometer resultados de peso o de salud: habla de calma, conciencia y relación con la comida.
@@ -18,6 +18,26 @@ Hola:
 Gracias por hacer el test. Tu resultado es **{$tipo_hambre}**.
 
 Antes de nada, algo importante: esto no dice nada malo de ti. Dice cómo ha aprendido tu cuerpo a calmarse. Y lo que se aprende se puede cambiar.
+
+Durante los próximos 7 días te enviaré un email corto al día, con un pequeño reto para practicar. Ninguno te llevará más de 5 minutos.
+
+Tu primer paso ya está desbloqueado: el **Módulo 1 · El Despertar de la Conciencia**.
+👉 [ENLACE APP]
+
+Escúchalo hoy, en un momento tranquilo.
+
+Un abrazo,
+[Tu nombre]
+*Psicoterapeuta e hipnoterapeuta*
+
+### Día 0 · Versión general (sin resultado)
+**Asunto:** Tu plan de 7 días empieza hoy
+
+Hola:
+
+Gracias por hacer el test. Tu resultado lo tienes en la app, y ahí se queda: es tuyo.
+
+Antes de nada, algo importante: sea cual sea, no dice nada malo de ti. Dice cómo ha aprendido tu cuerpo a calmarse. Y lo que se aprende se puede cambiar.
 
 Durante los próximos 7 días te enviaré un email corto al día, con un pequeño reto para practicar. Ninguno te llevará más de 5 minutos.
 
@@ -149,4 +169,21 @@ Y si no es ahora, también está bien. Sigue usando la Ayuda Rápida de la app c
 Un abrazo,
 [Tu nombre]
 
-*[Si tienes un testimonio real, con permiso, este es el mejor sitio para ponerlo.]*
+### Día 7 · Versión general (sin resultado)
+**Asunto:** Una última cosa
+
+Hola:
+
+Hoy termina esta pequeña serie. Gracias por dedicarte estos días.
+
+Cada tipo de hambre emocional tiene una parte muy concreta que trabajamos en el programa completo, y es justo donde más cambio suele notarse. Vuelve a mirar tu resultado en la app: ahí empieza tu camino.
+
+Si sientes que es tu momento, aquí lo tienes:
+👉 [ENLACE APP]
+
+Y si no es ahora, también está bien. Sigue usando la Ayuda Rápida de la app cuando la necesites: es gratis y es para ti.
+
+Un abrazo,
+[Tu nombre]
+
+*[Si tienes un testimonio real, con permiso por escrito, este es el mejor sitio para ponerlo en las dos versiones.]*
